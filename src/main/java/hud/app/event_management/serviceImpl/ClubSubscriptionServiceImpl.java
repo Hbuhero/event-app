@@ -93,7 +93,7 @@ public class ClubSubscriptionServiceImpl implements ClubSubscriptionService {
     }
 
     @Override
-    public Response<?> getAllClubSubscribers(String uuid, Pageable pageable) {
+    public Response<UserAccountResponseDto> getAllClubSubscribers(String uuid, Pageable pageable) {
         try {
             Optional<Club> optionalClub = clubRepository.findFirstByUuid(uuid);
             if (optionalClub.isEmpty()){
@@ -107,7 +107,7 @@ public class ClubSubscriptionServiceImpl implements ClubSubscriptionService {
                     .map(value -> userAccountMapper.toDto(value.getUserAccount()))
                     .toList();
 
-            return new Response<>(false, ResponseCode.SUCCESS, clubSubscribedMembers);
+            return new Response<>(false, ResponseCode.SUCCESS, userAccounts);
         } catch (Exception e) {
             return new Response<>(true, "Failed to get club's all subscribers with root cause: \n" +e.getMessage(), ResponseCode.FAIL);
         }

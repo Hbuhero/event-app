@@ -91,8 +91,8 @@ public class EventServiceImpl implements EventService {
             if (uuid == null) {
                 return new Response<>(true, "Argument should not be null", ResponseCode.NULL_ARGUMENT);
             }
-
-            Optional<Event> optionalEvent = eventRepository.findFirstByTitle(uuid);
+            System.out.printf(uuid);
+            Optional<Event> optionalEvent = eventRepository.findByUuid(uuid);
             if (optionalEvent.isEmpty()) {
                 return new Response<>(true, "Event not found", ResponseCode.NO_RECORD_FOUND);
             }

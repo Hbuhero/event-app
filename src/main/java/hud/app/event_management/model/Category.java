@@ -23,7 +23,7 @@ public class Category extends BaseEntity implements Serializable {
     @Column(name = "category", nullable = false, unique = true)
     private String category;
 
-    @OneToMany(mappedBy = "category", cascade = CascadeType.PERSIST)
+    @OneToMany(mappedBy = "category", cascade = CascadeType.ALL)
     private List<Event> events;
 
     public Category(String category){

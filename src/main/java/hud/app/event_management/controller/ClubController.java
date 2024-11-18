@@ -18,11 +18,12 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("api/v1/club")
 public class ClubController {
     private final ClubService clubService;
-    private PageableConfig pageableConfig;
+    private final PageableConfig pageableConfig;
 
     @Autowired
-    public ClubController(ClubService clubService) {
+    public ClubController(ClubService clubService, PageableConfig pageableConfig) {
         this.clubService = clubService;
+        this.pageableConfig = pageableConfig;
     }
 
     @PostMapping("/create-update")

@@ -1,6 +1,8 @@
 package hud.app.event_management.controller;
 
 import hud.app.event_management.dto.response.ClubResponseDto;
+import hud.app.event_management.dto.response.UserAccountResponseDto;
+import hud.app.event_management.model.UserAccount;
 import hud.app.event_management.service.ClubSubscriptionService;
 import hud.app.event_management.utils.Response;
 import hud.app.event_management.utils.paginationUtils.PageableConfig;
@@ -32,7 +34,7 @@ public class ClubSubscriptionController {
     }
 
     @GetMapping("/{uuid}/subscribers")
-    private Response<?> getAllClubSubscribers(@PathVariable("uuid") String uuid, @RequestBody PageableParam pageableParam){
+    private Response<UserAccountResponseDto> getAllClubSubscribers(@PathVariable("uuid") String uuid, @RequestBody PageableParam pageableParam){
         Pageable pageable = pageableConfig.pageable(pageableParam);
         return subscriptionService.getAllClubSubscribers(uuid, pageable);
     }

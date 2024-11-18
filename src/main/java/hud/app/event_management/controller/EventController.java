@@ -16,11 +16,12 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("api/v1/event")
 public class EventController {
     private final EventService eventService;
-    private PageableConfig pageableConfig;
+    private final PageableConfig pageableConfig;
 
     @Autowired
-    public EventController(EventService eventService) {
+    public EventController(EventService eventService, PageableConfig pageableConfig) {
         this.eventService = eventService;
+        this.pageableConfig = pageableConfig;
     }
 
     // get event by uuid
@@ -31,7 +32,7 @@ public class EventController {
 
     // get all events
     @GetMapping("/all")
-    private Page<EventResponseDto> getAllEvents(@RequestBody PageableParam pageableParam){
+    private Page<EventResponseDto> getAllEvents( PageableParam pageableParam){
         Pageable pageable = pageableConfig.pageable(pageableParam);
         return eventService.getAllEvents(pageable);
     }
@@ -48,8 +49,8 @@ public class EventController {
         return eventService.deleteEventByUuid(uuid);
     }
 
-    @GetMapping("/{name}")
-    private Response<EventResponseDto> getEventByName(@PathVariable("name") String name){
+    @GetMapping
+    private Response<EventResponseDto> getEventByName(@RequestParam("name") String name){
         return eventService.getEventByName(name);
     }
 }

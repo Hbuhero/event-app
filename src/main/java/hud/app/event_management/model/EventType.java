@@ -23,7 +23,7 @@ public class EventType extends BaseEntity implements Serializable {
     @Column(name = "type", nullable = false, unique = true)
     private String type;
 
-    @OneToMany(mappedBy = "type", cascade = CascadeType.PERSIST)
+    @OneToMany(mappedBy = "type", cascade = CascadeType.ALL)
     @JsonIgnore
     private List<Event> events;
 
