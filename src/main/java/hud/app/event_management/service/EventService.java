@@ -17,4 +17,8 @@ public interface EventService {
     Page<EventResponseDto> getAllEvents(Pageable pageable);
 
     Response<EventResponseDto> getEventByUuid(String uuid);
+
+    Response<?> getEventsByCategoryUuid(String uuid, Pageable pageable);
+
+    Response<?> getRandomEvents(Pageable pageable);
 }

@@ -3,6 +3,7 @@ package hud.app.event_management.serviceImpl;
 import hud.app.event_management.dto.request.EventDto;
 import hud.app.event_management.dto.response.EventResponseDto;
 import hud.app.event_management.mappers.EventMapper;
+import hud.app.event_management.model.Category;
 import hud.app.event_management.model.Event;
 import hud.app.event_management.repository.EventRepository;
 import hud.app.event_management.service.EventService;
@@ -15,18 +16,22 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 public class EventServiceImpl implements EventService {
 
     private final EventRepository eventRepository;
     private final EventMapper eventMapper;
+    private final CategoryServiceImpl categoryService;
 
     @Autowired
-    public EventServiceImpl(EventRepository eventRepository, EventMapper eventMapper) {
+    public EventServiceImpl(EventRepository eventRepository, EventMapper eventMapper, CategoryServiceImpl categoryService) {
         this.eventRepository = eventRepository;
         this.eventMapper = eventMapper;
+        this.categoryService = categoryService;
     }
 
     @Override
@@ -62,12 +67,17 @@ public class EventServiceImpl implements EventService {
                 return new Response<>(true, "Argument should not be null", ResponseCode.NULL_ARGUMENT);
             }
 
-            Optional<Event> optionalEvent = eventRepository.findFirstByTitle(uuid);
+            Optional<Event> optionalEvent = eventRepository.findFirstByUuid(uuid);
             if (optionalEvent.isEmpty()) {
                 return new Response<>(true, "Event not found", ResponseCode.NO_RECORD_FOUND);
             }
 
-            eventRepository.delete(optionalEvent.get());
+            Event event = optionalEvent.get();
+
+
+            //            boolean ok = categoryService.decreaseEventCount(event.getCategory().getUuid()).isError();
+
+            eventRepository.deleteById(event.getId());
 
             return new Response<>(false, ResponseCode.SUCCESS, "Event deleted successfully");
         } catch (Exception e) {
@@ -83,6 +93,41 @@ public class EventServiceImpl implements EventService {
             e.printStackTrace();
         }
         return new PageImpl<>(new ArrayList<>());
+    }
+
+    @Override
+    public Response<?> getEventsByCategoryUuid(String uuid, Pageable pageable) {
+        try {
+            // todo: check how to solve this
+            if (uuid == null){
+                return new Response<>(true, "Argument should not be null", ResponseCode.NULL_ARGUMENT);
+            }
+
+            Optional<Category> optionalCategory = categoryService.findCategory(uuid);
+            if (optionalCategory.isEmpty()){
+                return new Response<>(true, "No category found", ResponseCode.NO_RECORD_FOUND);
+            }
+
+//            eventRepository.
+            Page<EventResponseDto> eventPage = eventRepository.findAllByCategory(optionalCategory.get(), pageable).map(eventMapper::eventToDto);
+
+            return new Response<>(false, ResponseCode.SUCCESS, eventPage);
+        } catch (Exception e) {
+            return new Response<>(true, "Failed to get events by category uuid:" + uuid +" with root cause: \n"+e.getMessage(), ResponseCode.FAIL);
+        }
+
+    }
+
+    @Override
+    public Response<Page<EventResponseDto>> getRandomEvents(Pageable pageable) {
+        try {
+            int limit = 7;
+            List<EventResponseDto> event = eventRepository.findRandom(limit).stream().map(eventMapper::eventToDto).toList();
+            Page<EventResponseDto> eventPage = new PageImpl<>(event);
+            return new Response<>(false, ResponseCode.SUCCESS, eventPage);
+        } catch (Exception e) {
+            return new Response<>(true, "Failed to get random upcoming events with cause:\n"+ e.getMessage(), ResponseCode.FAIL);
+        }
     }
 
     @Override

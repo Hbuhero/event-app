@@ -13,7 +13,6 @@ import java.util.List;
 @Table(name = "event_category")
 @Getter
 @Setter
-@ToString
 @Builder
 @RequiredArgsConstructor
 @AllArgsConstructor
@@ -23,8 +22,17 @@ public class Category extends BaseEntity implements Serializable {
     @Column(name = "category", nullable = false, unique = true)
     private String category;
 
+    @Column(name = "description")
+    private String description;
+
     @OneToMany(mappedBy = "category", cascade = CascadeType.ALL)
     private List<Event> events;
+
+    @Column(name="image" ) // todo: make this not nullable
+    private String categoryImage;
+
+    @Column(name="svg", columnDefinition = "text") // todo: make this not nullable
+    private String categorySvg;
 
     public Category(String category){
         this.category = category;

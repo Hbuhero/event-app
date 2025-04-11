@@ -10,7 +10,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 @Entity
-@Table(name = "events")
+@Table(name = "event")
 @Getter
 @Setter
 @ToString
@@ -46,9 +46,9 @@ public class Event extends BaseEntity implements Serializable {
     @JoinColumn(name = "category", referencedColumnName = "id", nullable = false)
     private Category category;
 
-    @Column(name = "event_status", nullable = false)
+    @Column(name = "status", nullable = false)
     @Enumerated(EnumType.STRING)
-    private EventStatus eventStatus;
+    private EventStatus status;
 
     @Column(name = "url", nullable = false)
     private String url;

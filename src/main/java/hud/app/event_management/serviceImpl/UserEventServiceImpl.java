@@ -75,7 +75,7 @@ public class UserEventServiceImpl implements UserEventService {
 
             List<EventResponseDto> upcomingUserEvents = userEvents.stream()
                     .map(UserEvent::getEvent)
-                    .filter(event -> event.getEventStatus().equals(EventStatus.UPCOMING))
+                    .filter(event -> event.getStatus().equals(EventStatus.UPCOMING))
                     .map(eventMapper::eventToDto)
                     .toList();
 
@@ -96,7 +96,7 @@ public class UserEventServiceImpl implements UserEventService {
             Page<UserEvent> userEvents = userEventRepository.findByUserAccount(userAccount, pageable);
             List<EventResponseDto> pastUserEvents = userEvents.stream()
                     .map(UserEvent::getEvent)
-                    .filter(event -> event.getEventStatus().equals(EventStatus.UPCOMING))
+                    .filter(event -> event.getStatus().equals(EventStatus.UPCOMING))
                     .map(eventMapper::eventToDto)
                     .toList();
 

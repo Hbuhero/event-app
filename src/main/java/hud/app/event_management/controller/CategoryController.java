@@ -19,15 +19,16 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("api/v1/category")
 public class CategoryController {
     private final CategoryService categoryService;
-    private PageableConfig pageableConfig;
+    private final PageableConfig pageableConfig;
 
     @Autowired
-    public CategoryController(CategoryService categoryService) {
+    public CategoryController(CategoryService categoryService, PageableConfig pageableConfig) {
         this.categoryService = categoryService;
+        this.pageableConfig = pageableConfig;
     }
 
     @GetMapping("/all-categories")
-    private Page<CategoryResponseDto> getAllCategories(@RequestBody PageableParam pageableParam){
+    private Page<CategoryResponseDto> getAllCategories(PageableParam pageableParam){
         Pageable pageable = pageableConfig.pageable(pageableParam);
         return categoryService.getAllCategories(pageable);
     }
@@ -47,9 +48,5 @@ public class CategoryController {
         return categoryService.deleteCategoryByUuid(uuid);
     }
 
-    @GetMapping("/events/{uuid}")
-    private Page<EventResponseDto> getCategoryEvents(@PathVariable("uuid") String uuid, @RequestBody PageableParam pageableParam){
-        Pageable pageable = pageableConfig.pageable(pageableParam);
-        return categoryService.getEventsByCategoryUuid(uuid, pageable);
-    }
+
 }

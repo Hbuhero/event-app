@@ -32,7 +32,7 @@ public class EventController {
 
     // get all events
     @GetMapping("/all")
-    private Page<EventResponseDto> getAllEvents( PageableParam pageableParam){
+    private Page<EventResponseDto> getAllEvents(PageableParam pageableParam){
         Pageable pageable = pageableConfig.pageable(pageableParam);
         return eventService.getAllEvents(pageable);
     }
@@ -52,5 +52,17 @@ public class EventController {
     @GetMapping
     private Response<EventResponseDto> getEventByName(@RequestParam("name") String name){
         return eventService.getEventByName(name);
+    }
+
+    @GetMapping("/category/{uuid}")
+    private Response<?> getCategoryEvents(@PathVariable("uuid") String uuid, PageableParam pageableParam){
+        Pageable pageable = pageableConfig.pageable(pageableParam);
+        return eventService.getEventsByCategoryUuid(uuid, pageable);
+    }
+
+    @GetMapping("/random")
+    private Response<?> getRandomEvents(PageableParam pageableParam){
+        Pageable pageable = pageableConfig.pageable(pageableParam);
+        return eventService.getRandomEvents(pageable);
     }
 }

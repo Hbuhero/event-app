@@ -19,7 +19,9 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 public class CategoryServiceImpl implements CategoryService {
@@ -71,7 +73,26 @@ public class CategoryServiceImpl implements CategoryService {
 
     @Override
     public Response<CategoryResponseDto> createUpdateCategory(CategoryRequestDto categoryRequestDto) {
-        return null;
+        try {
+            Optional<Category> optionalCategory = categoryRepository.findFirstByCategory(categoryRequestDto.getCategory());
+
+            if (optionalCategory.isEmpty()){
+                Category category = categoryRepository.save(
+                        Category
+                                .builder()
+                                .category(categoryRequestDto.getCategory())
+                        .build()
+                );
+
+                return new Response<>(false, 7000, categoryMapper.toDto(category));
+            } else {
+//                todo
+                return null;
+            }
+        } catch (Exception e) {
+            return new Response<>(true, "Failed to create/update category by uuid with cause: \n"+e.getMessage(), ResponseCode.FAIL);
+        }
+
     }
 
     @Override
@@ -93,26 +114,12 @@ public class CategoryServiceImpl implements CategoryService {
         }
     }
 
-    @Override
-    public Page<EventResponseDto> getEventsByCategoryUuid(String uuid, Pageable pageable) {
-        try {
-            // todo: check how to solve this
-//            if (uuid == null){
-//                return new Response<>(true, "Argument should not be null", ResponseCode.NULL_ARGUMENT);
-//            }
 
-            Optional<Category> optionalCategory = categoryRepository.findFirstByUuid(uuid);
-//            if (optionalCategory.isEmpty()){
-//                return new Response<>(true, "No category found", ResponseCode.NO_RECORD_FOUND);
-//            }
-            Category category = optionalCategory.get();
 
-            System.out.println("fetching events from service");
-            return eventRepository.findAllByCategory(category, pageable).map(eventMapper::eventToDto);
 
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return new PageImpl<>(new ArrayList<>());
+    public Optional<Category> findCategory(String uuid) {
+        return categoryRepository.findFirstByUuid(uuid);
     }
+
+
 }

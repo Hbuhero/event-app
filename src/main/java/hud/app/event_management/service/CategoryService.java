@@ -18,7 +18,6 @@ public interface CategoryService {
 
     Response<String> deleteCategoryByUuid(String uuid);
 
-    Page<EventResponseDto> getEventsByCategoryUuid(String uuid, Pageable pageable);
 
 
 }
