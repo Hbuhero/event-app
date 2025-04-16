@@ -23,6 +23,7 @@ public class AuthController {
         return authService.register(userAccountDto);
     }
 
+//    @CrossOrigin(origins = "http://localhost:3000")
     @PostMapping("login")
     private Response<?> login(@RequestBody LoginRequestDto loginRequestDto){
         return authService.login(loginRequestDto);

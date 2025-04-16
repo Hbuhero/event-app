@@ -15,6 +15,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.web.bind.annotation.*;
 
+import java.nio.file.Path;
+
 @RestController
 @RequestMapping("api/v1/category")
 public class CategoryController {
@@ -48,5 +50,25 @@ public class CategoryController {
         return categoryService.deleteCategoryByUuid(uuid);
     }
 
+    @GetMapping("/name/{name}")
+    private Response<CategoryResponseDto> getCategoryByName(@PathVariable("name") String name){
+        return categoryService.getCategoryByName(name);
+    }
+
+    @GetMapping("/user-preference")
+    private Response<?> getUserSubscribedCategory(PageableParam pageableParam){
+        Pageable pageable = pageableConfig.pageable(pageableParam);
+        return categoryService.getUserSubscribedCategories(pageable);
+    }
+
+    @PostMapping("/user-preference/add/{uuid}")
+    private Response<String> addUserPreference(@PathVariable("uuid") String uuid){
+        return categoryService.addUserPreference(uuid);
+    }
+
+    @PostMapping("/user-preference/remove/{uuid}")
+    private Response<String> removeUserPreference(@PathVariable("uuid") String uuid){
+        return categoryService.removeUserPreference(uuid);
+    }
 
 }

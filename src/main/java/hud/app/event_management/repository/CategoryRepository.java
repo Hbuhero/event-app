@@ -11,5 +11,5 @@ import java.util.Optional;
 public interface CategoryRepository extends JpaRepository<Category, Long> {
     Optional<Category> findFirstByUuid(String uuid);
 
-    Optional<Category> findFirstByCategory(String category);
+    Optional<Category> findFirstByName(String name);
 }

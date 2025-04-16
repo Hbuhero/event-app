@@ -13,6 +13,6 @@ import java.util.List;
 public interface EventMapper {
 
     @Mapping(target = "type", source = "type.type")
-    @Mapping(target = "category", source = "category.category")
+    @Mapping(target = "category", source = "category.name")
     EventResponseDto eventToDto(Event event);
 }

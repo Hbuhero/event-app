@@ -2,10 +2,12 @@ package hud.app.event_management.serviceImpl;
 
 import hud.app.event_management.dto.request.*;
 import hud.app.event_management.dto.response.LoginResponseDto;
+import hud.app.event_management.jwt.JwtService;
 import hud.app.event_management.model.UserAccount;
 import hud.app.event_management.repository.UserAccountRepository;
 import hud.app.event_management.service.AuthService;
 import hud.app.event_management.service.UserAccountService;
+import hud.app.event_management.userDetailService.UserDetailsImpl;
 import hud.app.event_management.utils.Response;
 import hud.app.event_management.utils.ResponseCode;
 import hud.app.event_management.utils.userExtractor.LoggedUser;
@@ -30,14 +32,16 @@ public class AuthServiceImpl implements AuthService {
     private final UserAccountRepository userAccountRepository;
     private final PasswordEncoder passwordEncoder;
     private final AuthenticationManager authenticationManager;
+    private final JwtService jwtService;
 
-    private LoggedUser loggedUser;
+    private final LoggedUser loggedUser;
 
     @Autowired
-    public AuthServiceImpl(UserAccountRepository userAccountRepository, PasswordEncoder passwordEncoder, AuthenticationManager authenticationManager, LoggedUser loggedUser){
+    public AuthServiceImpl(UserAccountRepository userAccountRepository, PasswordEncoder passwordEncoder, AuthenticationManager authenticationManager, JwtService jwtService, LoggedUser loggedUser){
         this.userAccountRepository = userAccountRepository;
         this.passwordEncoder = passwordEncoder;
         this.authenticationManager = authenticationManager;
+        this.jwtService = jwtService;
         this.loggedUser = loggedUser;
     }
     @Override
@@ -63,6 +67,7 @@ public class AuthServiceImpl implements AuthService {
                     .phone(userAccountDto.getPhone())
                     .password(passwordEncoder.encode(userAccountDto.getPassword()))
                     .address(userAccountDto.getAddress())
+                    .userType("USER")
                     .enabled(false)
                     .build();
 
@@ -93,13 +98,13 @@ public class AuthServiceImpl implements AuthService {
             SecurityContextHolder.getContext().setAuthentication(authentication);
 
             // todo: generate jwt and refresh token
-            String jwt = "";
 
             Optional<UserAccount> optionalUserAccount = userAccountRepository.findFirstByUsername(loginRequestDto.getUsername());
             if (optionalUserAccount.isEmpty()){
                 return new Response<>(true, "Login failed", ResponseCode.FAIL);
             }
             UserAccount userAccount = optionalUserAccount.get();
+            String jwt = jwtService.generateToken(UserDetailsImpl.build(userAccount));
 
             return new Response<>(false, "Login successful", ResponseCode.SUCCESS, new LoginResponseDto(jwt, userAccount.getUsername(), userAccount.getUserType()));
         } catch (Exception e) {
@@ -226,6 +231,9 @@ public class AuthServiceImpl implements AuthService {
             }
 
             userAccount.setEnabled(true);
+            userAccount.setAccountNonLocked(true);
+            userAccount.setAccountNonExpired(true);
+            userAccount.setCredentialsNonExpired(true);
             UserAccount savedUserAccount = userAccountRepository.save(userAccount);
             return new Response<>(false, "Account activation successful", ResponseCode.SUCCESS, savedUserAccount);
         } catch (Exception e) {

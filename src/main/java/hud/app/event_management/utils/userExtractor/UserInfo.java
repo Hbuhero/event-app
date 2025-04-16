@@ -7,13 +7,13 @@ import lombok.*;
 @NoArgsConstructor
 public class UserInfo {
 
-    private Long id;
+//    private Long id;
     private String email;
     private boolean accountNonExpired;
     private boolean accountNonLocked;
     private boolean credentialsNonExpired;
     private boolean enabled;
-    private String name;
+//    private String name;
 
 }
 

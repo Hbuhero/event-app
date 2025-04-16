@@ -19,8 +19,8 @@ import java.util.List;
 @SQLDelete(sql = "UPDATE event_category SET deleted = true WHERE id = ?")
 @Where(clause = "deleted = false")
 public class Category extends BaseEntity implements Serializable {
-    @Column(name = "category", nullable = false, unique = true)
-    private String category;
+    @Column(name = "name", nullable = false, unique = true)
+    private String name;
 
     @Column(name = "description")
     private String description;
@@ -34,7 +34,7 @@ public class Category extends BaseEntity implements Serializable {
     @Column(name="svg", columnDefinition = "text") // todo: make this not nullable
     private String categorySvg;
 
-    public Category(String category){
-        this.category = category;
+    public Category(String name){
+        this.name = name;
     }
 }

@@ -38,13 +38,13 @@ public class UserEventController {
     }
 
     @GetMapping("/upcoming")
-    private Response<EventResponseDto> getUserUpcomingEvents(@RequestBody PageableParam pageableParam){
+    private Response<EventResponseDto> getUserUpcomingEvents( PageableParam pageableParam){
         Pageable pageable = pageableConfig.pageable(pageableParam);
         return userEventService.getUpcomingEvents(pageable);
     }
 
     @GetMapping("/past")
-    private Response<EventResponseDto> getUserPastEvents(@RequestBody PageableParam pageableParam){
+    private Response<EventResponseDto> getUserPastEvents(PageableParam pageableParam){
         Pageable pageable = pageableConfig.pageable(pageableParam);
         return userEventService.getPastEvents(pageable);
     }

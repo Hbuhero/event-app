@@ -6,7 +6,7 @@ import lombok.Getter;
 @Builder
 @Getter
 public class CategoryResponseDto {
-    private String category;
+    private String name;
     private String uuid;
     private long eventCount;
     private String image;

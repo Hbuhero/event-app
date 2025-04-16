@@ -13,7 +13,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("api/v1/userAccount/")
+@RequestMapping("api/v1/user/")
 public class UserAccountController {
     private final UserAccountService userAccountService;
     private final AuthService authService;

@@ -63,18 +63,18 @@ public class LoggedUserImpl implements LoggedUser, Serializable {
                     HashMap<String, Object> principalMap = (HashMap<String, Object>) principal;
                     log.info("User principal found: {}", principalMap);
 
-                    Object id = principalMap.get("id");
+//                    Object id = principalMap.get("id");
                     Object username = principalMap.get("username");
                     Object uuid = principalMap.get("uuid"); // Add this line to get the email
 
                     return new UserInfo(
-                            Long.parseLong(id.toString()), // Pass id as Long
-                            uuid != null ? uuid.toString() : null, // Pass email or null,
+//                            Long.parseLong(id.toString()), // Pass id as Long
+//                            uuid != null ? uuid.toString() : null, // Pass email or null,
+                            username != null ? username.toString() : null ,// Pass username or null
                             true, // Add your logic for accountNonExpired
                             true, // Add your logic for accountNonLocked
                             true, // Add your logic for credentialsNonExpired
-                            true, // Add your logic for enabled
-                            username != null ? username.toString() : null // Pass username or null
+                            true // Add your logic for enabled
                     );
                 }
             } catch (Exception e) {
@@ -88,8 +88,8 @@ public class LoggedUserImpl implements LoggedUser, Serializable {
     @Override
     public UserAccount getUser() {
         UserInfo userInfo = getInfo();
-        if (userInfo != null && userInfo.getId() != null) {
-            return repository.findById(userInfo.getId()).orElse(null);
+        if (userInfo != null && userInfo.getEmail() != null) {
+            return repository.findFirstByUsername(userInfo.getEmail()).orElse(null);
         }
         return null;
     }
