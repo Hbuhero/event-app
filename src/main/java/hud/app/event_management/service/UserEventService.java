@@ -15,7 +15,5 @@ public interface UserEventService {
 
     Response<String> deleteByUuid(String uuid);
 
-    Response<EventResponseDto> getUpcomingEvents(Pageable pageable);
-
-    Response<EventResponseDto> getPastEvents(Pageable pageable);
+    Response<?> getAllUserEvents(Pageable pageable);
 }

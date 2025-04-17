@@ -1,5 +1,7 @@
 package hud.app.event_management.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.JoinColumn;
@@ -24,9 +26,10 @@ public class UserSubscribedCategories extends BaseEntity implements Serializable
 
     @ManyToOne
     @JoinColumn(name = "user_account")
+    @JsonIgnore
     private UserAccount userAccount;
 
     @ManyToOne
-    @JoinColumn(name = "categpry")
+    @JoinColumn(name = "category")
     private Category category;
 }

@@ -38,6 +38,6 @@ public class Club extends BaseEntity implements Serializable {
     @JoinColumn(name = "club_admin")
     private UserAccount clubAdmin;
 
-    @OneToMany(mappedBy = "club", orphanRemoval = true, cascade = CascadeType.ALL)
-    private List<Event> clubEvents;
+//    @OneToMany(mappedBy = "club", orphanRemoval = true, cascade = CascadeType.ALL)
+//    private List<Event> clubEvents;
 }

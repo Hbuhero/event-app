@@ -14,5 +14,6 @@ public interface EventMapper {
 
     @Mapping(target = "type", source = "type.type")
     @Mapping(target = "category", source = "category.name")
+    @Mapping(target = "status", source = "status")
     EventResponseDto eventToDto(Event event);
 }

@@ -148,9 +148,9 @@ public class CategoryServiceImpl implements CategoryService {
                 return new Response<>(true, "Anonymous user, full authentication is required", ResponseCode.UNAUTHORIZED);
             }
 
-            List<CategoryResponseDto> categoryPageable = userSubscribedCategoryRepository.findAllCategoryByUserAccount(userAccount, pageable).stream().map(p -> categoryMapper.toDto(p.getCategory())).toList();
+            Page<CategoryResponseDto> categoryPageable = userSubscribedCategoryRepository.findAllCategoryByUserAccount(userAccount, pageable).map(e -> categoryMapper.toDto(e.getCategory()));
 
-            return new Response<>(false, ResponseCode.SUCCESS, new PageImpl<>(categoryPageable));
+            return new Response<>(false, ResponseCode.SUCCESS, categoryPageable);
         } catch (Exception e) {
             return new Response<>(true, "Failed to get user's category preference with cause: \n" + e.getMessage(), ResponseCode.FAIL);
         }

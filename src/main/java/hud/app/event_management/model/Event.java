@@ -56,8 +56,8 @@ public class Event extends BaseEntity implements Serializable {
     @Column(name = "pic_url")
     private String picUrl;
 
-    @ManyToOne
-    @JoinColumn(name = "club")
-    private Club club;
+//    @ManyToOne
+//    @JoinColumn(name = "club")
+//    private Club club;
 
 }

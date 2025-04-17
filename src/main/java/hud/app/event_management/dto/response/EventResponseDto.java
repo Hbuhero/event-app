@@ -23,7 +23,7 @@ public class EventResponseDto implements Serializable {
     private String about;
     private String type;
     private String category;
-    private EventStatus eventStatus;
+    private String status;
     private String url;
     private String picUrl;
 }

@@ -114,10 +114,12 @@ public class ClubServiceImpl implements ClubService {
     @Override
     public Page<EventResponseDto> getEventsByClubUuid(String uuid, Pageable pageable) {
         try {
-            // todo: handle expected behavior
-            Optional<Club> optionalClub = clubRepository.findFirstByUuid(uuid);
-            Club club = optionalClub.get();
-            return eventRepository.findAllByClub(club, pageable).map(eventMapper::eventToDto);
+//            // todo: handle expected behavior
+//            Optional<Club> optionalClub = clubRepository.findFirstByUuid(uuid);
+//            Club club = optionalClub.get();
+//            return eventRepository.findAllByClub(club, pageable).map(eventMapper::eventToDto);
+
+            return null;
         } catch (Exception e) {
             e.printStackTrace();
         }

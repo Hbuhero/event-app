@@ -13,6 +13,7 @@ import hud.app.event_management.service.UserEventService;
 import hud.app.event_management.utils.Response;
 import hud.app.event_management.utils.ResponseCode;
 import hud.app.event_management.utils.userExtractor.LoggedUser;
+import org.apache.catalina.User;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -64,43 +65,16 @@ public class UserEventServiceImpl implements UserEventService {
     }
 
     @Override
-    public Response<EventResponseDto> getUpcomingEvents(Pageable pageable) {
+    public Response<?> getAllUserEvents(Pageable pageable) {
         try {
             UserAccount userAccount = loggedUser.getUser();
             if (userAccount == null){
                 return new Response<>(true, "Anonymous user, full authentication is required", ResponseCode.UNAUTHORIZED);
             }
 
-            Page<UserEvent> userEvents = userEventRepository.findByUserAccount(userAccount, pageable);
+            Page<EventResponseDto> userEvents = userEventRepository.findByUserAccount(userAccount, pageable).map(e -> eventMapper.eventToDto(e.getEvent()));
 
-            List<EventResponseDto> upcomingUserEvents = userEvents.stream()
-                    .map(UserEvent::getEvent)
-                    .filter(event -> event.getStatus().equals(EventStatus.UPCOMING))
-                    .map(eventMapper::eventToDto)
-                    .toList();
-
-            return new Response<EventResponseDto>(false, ResponseCode.SUCCESS, upcomingUserEvents);
-        } catch (Exception e) {
-            return new Response<>(true, "Failed to get user upcoming events with cause: \n"+e.getMessage(), ResponseCode.FAIL);
-        }
-    }
-
-    @Override
-    public Response<EventResponseDto> getPastEvents(Pageable pageable) {
-        try {
-            UserAccount userAccount = loggedUser.getUser();
-            if (userAccount == null){
-                return new Response<>(true, "Anonymous user, full authentication is required", ResponseCode.UNAUTHORIZED);
-            }
-
-            Page<UserEvent> userEvents = userEventRepository.findByUserAccount(userAccount, pageable);
-            List<EventResponseDto> pastUserEvents = userEvents.stream()
-                    .map(UserEvent::getEvent)
-                    .filter(event -> event.getStatus().equals(EventStatus.UPCOMING))
-                    .map(eventMapper::eventToDto)
-                    .toList();
-
-            return new Response<>(false, ResponseCode.SUCCESS, pastUserEvents);
+            return new Response<>(false, ResponseCode.SUCCESS, userEvents);
         } catch (Exception e) {
             return new Response<>(true, "Failed to get user upcoming events with cause: \n"+e.getMessage(), ResponseCode.FAIL);
         }

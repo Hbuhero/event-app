@@ -22,36 +22,47 @@ import org.springframework.web.filter.CorsFilter;
 import java.util.Arrays;
 import java.util.List;
 
-    @Configuration
-    @EnableWebSecurity
-    @EnableMethodSecurity(
-            prePostEnabled = true
-    )
-    @RequiredArgsConstructor
-    public class SecurityConfiguration {
+@Configuration
+@EnableWebSecurity
+@EnableMethodSecurity(
+        prePostEnabled = true
+)
+@RequiredArgsConstructor
+public class SecurityConfiguration {
 
-        @Autowired
-        private final JwtAuthenticationFilter jwtAuthFilter;
+    private final String[] openApis = {
+            "/api/v1/auth/**",
+            "/api/v1/category/all-categories",
+            "/api/v1/event/all",
+            "/api/v1/event/random",
+            "/api/v1/event/category/{uuid}"
 
-        @Autowired
-        private final AuthenticationProvider authenticationProvider;
+    };
 
-        @Bean
-        public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception{
+    @Autowired
+    private final JwtAuthenticationFilter jwtAuthFilter;
+
+    @Autowired
+    private final AuthenticationProvider authenticationProvider;
+
+    @Autowired
+    CorsFilter corsFilter;
+
+    @Bean
+    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception{
             http.csrf(AbstractHttpConfigurer::disable)
                     .cors(corsPolicy -> corsPolicy.configure(http))
-                    .authorizeHttpRequests(auth -> {
-                        auth.requestMatchers("/api/v1/auth/**").permitAll();
-                    })
-                    .authorizeHttpRequests(auth -> auth.anyRequest().authenticated())
-                    .sessionManagement(sess -> sess.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                    .authorizeHttpRequests(auth -> auth
+                                .requestMatchers(openApis).permitAll()
+                                .anyRequest().authenticated()
+                    )
+                    .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                     .authenticationProvider(authenticationProvider)
                     .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class );
 
             return http.build();
-        }
-
-        @Autowired
-        CorsFilter corsFilter;
     }
+
+
+}
 

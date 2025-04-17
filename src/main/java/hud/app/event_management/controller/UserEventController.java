@@ -37,15 +37,9 @@ public class UserEventController {
         return userEventService.deleteByUuid(uuid);
     }
 
-    @GetMapping("/upcoming")
-    private Response<EventResponseDto> getUserUpcomingEvents( PageableParam pageableParam){
+    @GetMapping("all")
+    private Response<?> getAllUserEvents( PageableParam pageableParam){
         Pageable pageable = pageableConfig.pageable(pageableParam);
-        return userEventService.getUpcomingEvents(pageable);
-    }
-
-    @GetMapping("/past")
-    private Response<EventResponseDto> getUserPastEvents(PageableParam pageableParam){
-        Pageable pageable = pageableConfig.pageable(pageableParam);
-        return userEventService.getPastEvents(pageable);
+        return userEventService.getAllUserEvents(pageable);
     }
 }

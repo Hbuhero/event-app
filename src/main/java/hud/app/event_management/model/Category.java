@@ -26,6 +26,7 @@ public class Category extends BaseEntity implements Serializable {
     private String description;
 
     @OneToMany(mappedBy = "category", cascade = CascadeType.ALL)
+    @JsonIgnore
     private List<Event> events;
 
     @Column(name="image" ) // todo: make this not nullable

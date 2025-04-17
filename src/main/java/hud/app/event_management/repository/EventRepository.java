@@ -21,7 +21,7 @@ public interface EventRepository extends JpaRepository<Event, Long> {
 
     Page<Event> findAllByType(EventType eventType, Pageable pageable);
 
-    Page<Event> findAllByClub(Club club, Pageable pageable);
+//    Page<Event> findAllByClub(Club club, Pageable pageable);
 
     Optional<Event> findByUuid(String uuid);
 
