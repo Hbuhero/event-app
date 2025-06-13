@@ -6,12 +6,10 @@ import hud.app.event_management.jwt.JwtService;
 import hud.app.event_management.model.UserAccount;
 import hud.app.event_management.repository.UserAccountRepository;
 import hud.app.event_management.service.AuthService;
-import hud.app.event_management.service.UserAccountService;
 import hud.app.event_management.userDetailService.UserDetailsImpl;
 import hud.app.event_management.utils.Response;
 import hud.app.event_management.utils.ResponseCode;
 import hud.app.event_management.utils.userExtractor.LoggedUser;
-import org.apache.catalina.User;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -45,7 +43,7 @@ public class AuthServiceImpl implements AuthService {
         this.loggedUser = loggedUser;
     }
     @Override
-    public Response<String> register(UserAccountDto userAccountDto) {
+    public Response<String> register(UserAccountRequest userAccountDto) {
         try {
             // todo: validate null values
             Optional<UserAccount> optionalUserAccount = userAccountRepository.findFirstByUsername(userAccountDto.getEmail());
@@ -67,6 +65,7 @@ public class AuthServiceImpl implements AuthService {
                     .phone(userAccountDto.getPhone())
                     .password(passwordEncoder.encode(userAccountDto.getPassword()))
                     .address(userAccountDto.getAddress())
+                    .profilePhoto(userAccountDto.getProfilePhoto())
                     .userType("USER")
                     .enabled(false)
                     .build();
@@ -89,17 +88,17 @@ public class AuthServiceImpl implements AuthService {
     }
 
     @Override
-    public Response<LoginResponseDto> login(LoginRequestDto loginRequestDto) {
+    public Response<LoginResponseDto> login(LoginRequest loginRequest) {
         try {
 
             Authentication authentication = authenticationManager.authenticate(
-                    new UsernamePasswordAuthenticationToken(loginRequestDto.getUsername(), loginRequestDto.getPassword())
+                    new UsernamePasswordAuthenticationToken(loginRequest.getUsername(), loginRequest.getPassword())
             );
             SecurityContextHolder.getContext().setAuthentication(authentication);
 
             // todo: generate jwt and refresh token
 
-            Optional<UserAccount> optionalUserAccount = userAccountRepository.findFirstByUsername(loginRequestDto.getUsername());
+            Optional<UserAccount> optionalUserAccount = userAccountRepository.findFirstByUsername(loginRequest.getUsername());
             if (optionalUserAccount.isEmpty()){
                 return new Response<>(true, "Login failed", ResponseCode.FAIL);
             }
@@ -113,14 +112,14 @@ public class AuthServiceImpl implements AuthService {
     }
 
     @Override
-    public Response<String> validateOTP(OTPRequestDto otpRequestDto) {
+    public Response<String> validateOTP(OTPRequest otpRequest) {
         try {
             // todo: validate null values
-            if (otpRequestDto.getOtp().isBlank() || otpRequestDto.getUsername().isBlank()){
+            if (otpRequest.getOtp().isBlank() || otpRequest.getUsername().isBlank()){
                 return new Response<>(true, "Username or OTP must not be empty", ResponseCode.NULL_ARGUMENT);
             }
 
-            Optional<UserAccount> optionalUserAccount = userAccountRepository.findFirstByUsername(otpRequestDto.getUsername());
+            Optional<UserAccount> optionalUserAccount = userAccountRepository.findFirstByUsername(otpRequest.getUsername());
             if (optionalUserAccount.isEmpty()){
                 return new Response<>(true, "User not found", ResponseCode.USER_NOT_FOUND);
             }
@@ -136,7 +135,7 @@ public class AuthServiceImpl implements AuthService {
                 return new Response<>(true, "OTP is has expired, request new OTP", ResponseCode.FAIL);
             }
             // is the otp valid
-            if (!otpRequestDto.getOtp().equals(userAccount.getOneTimePassword())){
+            if (!otpRequest.getOtp().equals(userAccount.getOneTimePassword())){
                 return new Response<>(true, "Invalid or wrong OTP", ResponseCode.FAIL);
             }
 
@@ -176,7 +175,7 @@ public class AuthServiceImpl implements AuthService {
     }
 
     @Override
-    public Response<String> resetPassword(PasswordRequestDto passwordRequestDto) {
+    public Response<String> resetPassword(PasswordRequest passwordRequestDto) {
         try {
             if (passwordRequestDto.getPassword().isBlank() || passwordRequestDto.getUsername().isBlank()){
                 return new Response<>(true, "Username and password must not be null", ResponseCode.NULL_ARGUMENT);
@@ -205,13 +204,13 @@ public class AuthServiceImpl implements AuthService {
     }
 
     @Override
-    public Response<UserAccount> activateAccount(ActivationRequestDTO activationRequestDTO) {
+    public Response<UserAccount> activateAccount(ActivationRequest activationRequest) {
         try{
-            if (activationRequestDTO.getUsername().isBlank() || activationRequestDTO.getOpt().isBlank()){
+            if (activationRequest.getUsername().isBlank() || activationRequest.getOpt().isBlank()){
                 return new Response<>(true, "Username and OTP cant not be null", ResponseCode.FAIL);
             }
 
-            Optional<UserAccount> optionalUserAccount = userAccountRepository.findFirstByUsername(activationRequestDTO.getUsername());
+            Optional<UserAccount> optionalUserAccount = userAccountRepository.findFirstByUsername(activationRequest.getUsername());
             if (optionalUserAccount.isEmpty()){
                 return new Response<>(true, "User not found", ResponseCode.FAIL);
             }
@@ -226,7 +225,7 @@ public class AuthServiceImpl implements AuthService {
               return new Response<>(true, "Invalid OTP, code already expired", ResponseCode.FAIL);
             }
 
-            if (!activationRequestDTO.getOpt().equalsIgnoreCase(userAccount.getOneTimePassword())){
+            if (!activationRequest.getOpt().equalsIgnoreCase(userAccount.getOneTimePassword())){
                 return new Response<>(true, "OTP is invalid, please try again", ResponseCode.FAIL);
             }
 

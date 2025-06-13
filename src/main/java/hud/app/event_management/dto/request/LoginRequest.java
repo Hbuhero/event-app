@@ -1,9 +1,11 @@
 package hud.app.event_management.dto.request;
 
 import lombok.Getter;
+import lombok.Setter;
 
 @Getter
-public class ActivationRequestDTO {
+@Setter
+public class LoginRequest {
     private String username;
-    private String opt;
+    private String password;
 }

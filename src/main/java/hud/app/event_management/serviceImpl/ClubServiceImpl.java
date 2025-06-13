@@ -1,12 +1,11 @@
 package hud.app.event_management.serviceImpl;
 
-import hud.app.event_management.dto.request.ClubRequestDto;
+import hud.app.event_management.dto.request.ClubRequest;
 import hud.app.event_management.dto.response.ClubResponseDto;
 import hud.app.event_management.dto.response.EventResponseDto;
 import hud.app.event_management.mappers.ClubMapper;
 import hud.app.event_management.mappers.EventMapper;
 import hud.app.event_management.model.Club;
-import hud.app.event_management.model.Event;
 import hud.app.event_management.repository.ClubRepository;
 import hud.app.event_management.repository.EventRepository;
 import hud.app.event_management.service.ClubService;
@@ -16,11 +15,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
-import org.springframework.security.core.parameters.P;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
-import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -40,7 +37,7 @@ public class ClubServiceImpl implements ClubService {
     }
 
     @Override
-    public Response<ClubResponseDto> createUpdateClub(ClubRequestDto clubRequestDto) {
+    public Response<ClubResponseDto> createUpdateClub(ClubRequest clubRequest) {
         return null;
     }
 

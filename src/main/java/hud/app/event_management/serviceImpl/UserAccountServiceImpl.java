@@ -1,13 +1,12 @@
 package hud.app.event_management.serviceImpl;
 
-import hud.app.event_management.dto.request.UserAccountDto;
+import hud.app.event_management.dto.request.UserAccountRequest;
 import hud.app.event_management.model.UserAccount;
 import hud.app.event_management.repository.UserAccountRepository;
 import hud.app.event_management.service.UserAccountService;
 import hud.app.event_management.utils.Response;
 import hud.app.event_management.utils.ResponseCode;
 import hud.app.event_management.utils.userExtractor.LoggedUser;
-import org.apache.catalina.User;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -15,7 +14,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
-import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -54,9 +52,26 @@ public class UserAccountServiceImpl implements UserAccountService {
     }
 
     @Override
-    public Response<UserAccount> createUpdateUserAccount(UserAccountDto userAccountDto) {
-        // todo: update api
-        return null;
+    public Response<UserAccount> createUpdateUserAccount(UserAccountRequest userAccountDto) {
+        try {
+            UserAccount userAccount = loggedUser.getUser();
+            if (userAccount == null) {
+                return new Response<>(true, "Anonymous user, full authentication is required", ResponseCode.UNAUTHORIZED);
+            }
+
+            userAccount.setFirstName(userAccountDto.getFirstname());
+            userAccount.setMiddleName(userAccountDto.getMiddleName());
+            userAccount.setLastName(userAccountDto.getLastname());
+            userAccount.setAddress(userAccountDto.getAddress());
+            userAccount.setPhone(userAccountDto.getPhone());
+            userAccount.setProfilePhoto(userAccountDto.getProfilePhoto());
+
+            UserAccount response = userAccountRepository.save(userAccount);
+
+            return new Response<>(false, "Successfully updated profile", ResponseCode.SUCCESS, response);
+        } catch (Exception e) {
+            return new Response<>(true, "Failed to update user account with cause: \n"+e.getMessage(), ResponseCode.FAIL);
+        }
     }
 
     @Override

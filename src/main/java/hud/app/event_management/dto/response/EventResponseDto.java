@@ -8,7 +8,9 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.io.Serializable;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 
 @Builder
 @Getter
@@ -17,8 +19,9 @@ public class EventResponseDto implements Serializable {
     private String uuid;
     private String title;
     private String hostedBy;
-    private LocalDateTime startingDate;
-    private LocalDateTime endingDate;
+    private String hostUrl;
+    private LocalDate startingDate;
+    private LocalTime startingTime;
     private String location;
     private String about;
     private String type;

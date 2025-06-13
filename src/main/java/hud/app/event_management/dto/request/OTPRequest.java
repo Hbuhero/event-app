@@ -3,7 +3,7 @@ package hud.app.event_management.dto.request;
 import lombok.Getter;
 
 @Getter
-public class PasswordRequestDto {
+public class OTPRequest {
     private String username;
-    private String password;
+    private String otp;
 }

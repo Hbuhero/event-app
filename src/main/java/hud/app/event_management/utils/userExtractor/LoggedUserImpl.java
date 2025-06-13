@@ -1,5 +1,6 @@
 package hud.app.event_management.utils.userExtractor;
 import java.io.Serializable;
+import java.lang.annotation.Annotation;
 import java.util.HashMap;
 
 import hud.app.event_management.model.UserAccount;
@@ -26,7 +27,7 @@ public class LoggedUserImpl implements LoggedUser, Serializable {
     private UserAccountRepository repository;
 
     @Autowired
-    private ObjectMapper objectMapper;
+    private final ObjectMapper objectMapper;
 
     private static final Logger logger = LoggerFactory.getLogger(LoggedUserImpl.class);
 
@@ -93,5 +94,7 @@ public class LoggedUserImpl implements LoggedUser, Serializable {
         }
         return null;
     }
+
+
 }
 

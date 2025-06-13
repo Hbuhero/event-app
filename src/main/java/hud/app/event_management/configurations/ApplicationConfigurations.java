@@ -17,7 +17,6 @@ public class ApplicationConfigurations {
 
     private final UserDetailsServiceImpl userDetailsService;
 
-
     @Autowired
     public ApplicationConfigurations(UserDetailsServiceImpl userDetailsService){
         this.userDetailsService = userDetailsService;

@@ -7,4 +7,8 @@ import java.util.Optional;
 
 public interface EventTypeRepository extends JpaRepository<EventType, Long> {
     Optional<EventType> findFirstByUuid(String uuid);
+
+    Optional<EventType> findByType(String type);
+
+    Optional<EventType> findFirstByType(String eventType);
 }

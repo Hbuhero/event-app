@@ -1,10 +1,12 @@
 package hud.app.event_management.userDetailService;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import hud.app.event_management.model.UserAccount;
 import hud.app.event_management.utils.Roles;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import lombok.AllArgsConstructor;
+import lombok.Getter;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -17,18 +19,20 @@ import java.util.List;
 @AllArgsConstructor
 public class UserDetailsImpl implements UserDetails {
 
+    @Getter
     private final Long id;
     private final String username;
-    private final String firstName;
-    private final String lastName;
+    @Getter
     private final String phone;
-    private final String userType;
-    private final String password;
+    @Getter
+    private final String firstName;
+    @Getter
+    private final String lastName;
+    @Getter
     private final String uuid;
-    private boolean accountNonExpired;
-    private boolean accountNonLocked;
-    private boolean credentialsNonExpired;
-    private boolean enabled;
+    @JsonIgnore
+    private final String password;
+    private final String userType;
 
     @Enumerated(EnumType.STRING)
     private Roles role;
@@ -36,8 +40,7 @@ public class UserDetailsImpl implements UserDetails {
     private final Collection<? extends GrantedAuthority> authorities;
 
     public UserDetailsImpl(Long id, String username, String phone, String uuid, String firstName, String lastName,
-                           String password, Roles userType, Collection<? extends GrantedAuthority> authorities,
-                           boolean enabled, boolean credentialsNonExpired, boolean accountNonExpired, boolean accountNonLocked) {
+                           String password, Roles userType, Collection<? extends GrantedAuthority> authorities) {
         this.id = id;
         this.username = username;
         this.phone = phone;
@@ -47,13 +50,10 @@ public class UserDetailsImpl implements UserDetails {
         this.password = password;
         this.userType = String.valueOf(userType);
         this.authorities = authorities;
-        this.accountNonExpired = accountNonExpired;
-        this.accountNonLocked = accountNonLocked;
-        this.credentialsNonExpired = credentialsNonExpired;
-        this.enabled = enabled;
     }
 
-    public static UserDetailsImpl build(UserAccount user){
+    // Change the build method to non-static
+    public static UserDetailsImpl build(UserAccount user) {
         List<GrantedAuthority> authorities = Collections.singletonList(new SimpleGrantedAuthority(user.getUserType()));
         return new UserDetailsImpl(
                 user.getId(),
@@ -64,14 +64,9 @@ public class UserDetailsImpl implements UserDetails {
                 user.getLastName(),
                 user.getPassword(),
                 Roles.valueOf(user.getUserType()), // Assuming Role is an enum
-                authorities,
-                user.isEnabled(),
-                user.isCredentialsNonExpired(),
-                user.isAccountNonExpired(),
-                user.isAccountNonLocked()
-        );
+                authorities);
     }
-    
+
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return authorities;
@@ -89,21 +84,21 @@ public class UserDetailsImpl implements UserDetails {
 
     @Override
     public boolean isAccountNonExpired() {
-        return accountNonExpired;
+        return true;
     }
 
     @Override
     public boolean isAccountNonLocked() {
-        return accountNonLocked;
+        return true;
     }
 
     @Override
     public boolean isCredentialsNonExpired() {
-        return credentialsNonExpired;
+        return true;
     }
 
     @Override
     public boolean isEnabled() {
-        return enabled;
+        return true;
     }
 }

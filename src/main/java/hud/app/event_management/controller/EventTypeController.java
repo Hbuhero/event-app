@@ -9,44 +9,50 @@ import hud.app.event_management.utils.paginationUtils.PageableParam;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("api/v1/event-type")
 public class EventTypeController {
     private final EventTypeService eventTypeService;
-    private PageableConfig pageableConfig;
+    private final PageableConfig pageableConfig;
 
     @Autowired
-    public EventTypeController(EventTypeService eventTypeService) {
+    public EventTypeController(EventTypeService eventTypeService, PageableConfig pageableConfig) {
         this.eventTypeService = eventTypeService;
+        this.pageableConfig = pageableConfig;
     }
 
     @GetMapping("/all")
-    private Page<EventTypeResponseDto> getAllEventTypes(@RequestBody PageableParam pageableParam){
+    @PreAuthorize("permitAll()")
+    private Page<EventTypeResponseDto> getAllEventTypes(PageableParam pageableParam){
         Pageable pageable = pageableConfig.pageable(pageableParam);
         return eventTypeService.getAllEventTypes(pageable);
     }
 
     @GetMapping("/{uuid}")
+    @PreAuthorize("permitAll()")
     private Response<EventTypeResponseDto> getByUuid(@PathVariable("uuid") String uuid){
         return eventTypeService.getByUuid(uuid);
     }
 
     @GetMapping("/events")
-    private Page<EventResponseDto> getEventsByType(@PathVariable("uuid")String uuid, @RequestBody PageableParam pageableParam){
+    @PreAuthorize("permitAll()")
+    private Page<EventResponseDto> getEventsByType(@PathVariable("uuid")String uuid, PageableParam pageableParam){
         Pageable pageable = pageableConfig.pageable(pageableParam);
         return eventTypeService.getEventsByType(uuid, pageable);
     }
 
     @PostMapping("/delete/{uuid}")
+    @PreAuthorize("hasRole('SUPER_ADMIN')")
     private Response<String> deleteByUuid(@PathVariable("uuid") String uuid){
         return eventTypeService.deleteByUuid(uuid);
     }
 
     @PostMapping("create-update")
-    //todo: annotate the param
-    private Response<EventTypeResponseDto> createUpdateEventType(String eventType){
+    @PreAuthorize("hasRole('SUPER_ADMIN')")
+    private Response<EventTypeResponseDto> createUpdateEventType(@RequestParam("eventType") String eventType){
         return eventTypeService.createUpdateEventType(eventType);
     }
 

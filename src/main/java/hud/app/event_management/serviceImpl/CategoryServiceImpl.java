@@ -1,32 +1,23 @@
 package hud.app.event_management.serviceImpl;
 
-import hud.app.event_management.dto.request.CategoryRequestDto;
+import hud.app.event_management.dto.request.CategoryRequest;
 import hud.app.event_management.dto.response.CategoryResponseDto;
-import hud.app.event_management.dto.response.EventResponseDto;
 import hud.app.event_management.mappers.CategoryMapper;
-import hud.app.event_management.mappers.EventMapper;
 import hud.app.event_management.model.Category;
-import hud.app.event_management.model.Event;
 import hud.app.event_management.model.UserAccount;
-import hud.app.event_management.model.UserSubscribedCategories;
+import hud.app.event_management.model.UserSubscribedCategory;
 import hud.app.event_management.repository.CategoryRepository;
-import hud.app.event_management.repository.EventRepository;
 import hud.app.event_management.repository.UserSubscribedCategoryRepository;
 import hud.app.event_management.service.CategoryService;
 import hud.app.event_management.utils.Response;
 import hud.app.event_management.utils.ResponseCode;
-import hud.app.event_management.utils.paginationUtils.PageableParam;
 import hud.app.event_management.utils.userExtractor.LoggedUser;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 @Service
 public class CategoryServiceImpl implements CategoryService {
@@ -36,7 +27,7 @@ public class CategoryServiceImpl implements CategoryService {
     private final UserSubscribedCategoryRepository userSubscribedCategoryRepository;
 
     @Autowired
-    public CategoryServiceImpl(CategoryRepository categoryRepository, EventRepository eventRepository, EventMapper eventMapper,
+    public CategoryServiceImpl(CategoryRepository categoryRepository,
                                CategoryMapper categoryMapper, LoggedUser loggedUser, UserSubscribedCategoryRepository userSubscribedCategoryRepository) {
         this.categoryRepository = categoryRepository;
         this.categoryMapper = categoryMapper;
@@ -45,13 +36,14 @@ public class CategoryServiceImpl implements CategoryService {
     }
 
     @Override
-    public Page<CategoryResponseDto> getAllCategories(Pageable pageable) {
+    public Response<?> getAllCategories(Pageable pageable) {
         try {
-            return categoryRepository.findAll(pageable).map(categoryMapper::toDto);
+            Page<CategoryResponseDto> responseDto = categoryRepository.findAll(pageable).map(categoryMapper::toDto);
+            return new Response<>(false, ResponseCode.SUCCESS, responseDto);
         } catch (Exception e) {
-            e.printStackTrace();
+            return new Response<>(true, "Failed to get all categories with cause: \n"+e.getMessage(), ResponseCode.FAIL);
         }
-        return new PageImpl<>(new ArrayList<>());
+
     }
 
     @Override
@@ -77,23 +69,32 @@ public class CategoryServiceImpl implements CategoryService {
     }
 
     @Override
-    public Response<CategoryResponseDto> createUpdateCategory(CategoryRequestDto categoryRequestDto) {
+    public Response<CategoryResponseDto> createUpdateCategory(CategoryRequest categoryRequest) {
         try {
-            Optional<Category> optionalCategory = categoryRepository.findFirstByName(categoryRequestDto.getName());
+            Optional<Category> optionalCategory = categoryRepository.findFirstByName(categoryRequest.getName());
 
+            Category category;
             if (optionalCategory.isEmpty()){
-                Category category = categoryRepository.save(
+                category = categoryRepository.save(
                         Category
                                 .builder()
-                                .name(categoryRequestDto.getName())
-                        .build()
+                                .name(categoryRequest.getName())
+                                .categoryImage(categoryRequest.getCategoryImage())
+                                .categorySvg(categoryRequest.getCategorySvg())
+                                .description(categoryRequest.getDescription())
+                                .build()
                 );
 
-                return new Response<>(false, 7000, categoryMapper.toDto(category));
             } else {
-//                todo
-                return null;
+                category = optionalCategory.get();
+
+               category.setCategoryImage(categoryRequest.getCategoryImage());
+               category.setCategorySvg(categoryRequest.getCategorySvg());
+               category.setDescription(categoryRequest.getDescription());
+               category.setName(categoryRequest.getName());
+
             }
+            return new Response<>(false, 7000, categoryMapper.toDto(category));
         } catch (Exception e) {
             return new Response<>(true, "Failed to create/update category by uuid with cause: \n"+e.getMessage(), ResponseCode.FAIL);
         }
@@ -163,6 +164,7 @@ public class CategoryServiceImpl implements CategoryService {
             if (userAccount == null){
                 return new Response<>(true, "Anonymous user, full authentication is required", ResponseCode.UNAUTHORIZED);
             }
+
             if (uuid == null){
                 return new Response<>(true, "Argument should not be null", ResponseCode.NULL_ARGUMENT);
             }
@@ -173,8 +175,14 @@ public class CategoryServiceImpl implements CategoryService {
             }
 
             Category category = optionalCategory.get();
+
+            Optional<UserSubscribedCategory> subscribedCategory = userSubscribedCategoryRepository.findByUserAccountAndCategory(userAccount, category);
+            if (subscribedCategory.isPresent()){
+                return new Response<>(true, "Category is already subscribed", ResponseCode.DUPLICATE);
+            }
+
             userSubscribedCategoryRepository.save(
-                    UserSubscribedCategories.builder()
+                    UserSubscribedCategory.builder()
                             .category(category)
                             .userAccount(userAccount)
                             .build()
@@ -205,12 +213,15 @@ public class CategoryServiceImpl implements CategoryService {
 
             Category category = optionalCategory.get();
 
-            userSubscribedCategoryRepository.deleteByUserAccountAndCategory(userAccount, category);
-
+            Optional<UserSubscribedCategory> subscribedCategory = userSubscribedCategoryRepository.findByUserAccountAndCategory(userAccount, category);
+            if (subscribedCategory.isEmpty()){
+                return new Response<>(true, "No subscription for the provided category is found", ResponseCode.NO_RECORD_FOUND);
+            }
+            subscribedCategory.ifPresent(userSubscribedCategoryRepository::delete);
             return new Response<>(false, "Removed category preference successfully", ResponseCode.SUCCESS);
 
         } catch (Exception e) {
-            return new Response<>(true, "Failed to get user's category preference with cause:\n" + e.getMessage(), ResponseCode.FAIL);
+            return new Response<>(true, "Failed to remove user's category preference with cause:\n" + e.getMessage(), ResponseCode.FAIL);
         }
     }
 

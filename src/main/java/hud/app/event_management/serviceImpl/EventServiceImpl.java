@@ -1,37 +1,42 @@
 package hud.app.event_management.serviceImpl;
 
-import hud.app.event_management.dto.request.EventDto;
+import hud.app.event_management.dto.request.EventRequest;
+import hud.app.event_management.dto.request.UserAccountRequest;
 import hud.app.event_management.dto.response.EventResponseDto;
 import hud.app.event_management.mappers.EventMapper;
-import hud.app.event_management.model.Category;
-import hud.app.event_management.model.Event;
+import hud.app.event_management.model.*;
+import hud.app.event_management.repository.CategoryRepository;
 import hud.app.event_management.repository.EventRepository;
+import hud.app.event_management.repository.EventTypeRepository;
 import hud.app.event_management.service.EventService;
 import hud.app.event_management.utils.Response;
 import hud.app.event_management.utils.ResponseCode;
+import hud.app.event_management.utils.userExtractor.LoggedUser;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 @Service
 public class EventServiceImpl implements EventService {
 
     private final EventRepository eventRepository;
     private final EventMapper eventMapper;
-    private final CategoryServiceImpl categoryService;
+    private final CategoryRepository categoryRepository;
+    private final EventTypeRepository eventTypeRepository;
+    private final LoggedUser loggedUser;
 
     @Autowired
-    public EventServiceImpl(EventRepository eventRepository, EventMapper eventMapper, CategoryServiceImpl categoryService) {
+    public EventServiceImpl(EventRepository eventRepository, EventMapper eventMapper, CategoryRepository categoryRepository, EventTypeRepository eventTypeRepository, LoggedUser loggedUser) {
         this.eventRepository = eventRepository;
         this.eventMapper = eventMapper;
-        this.categoryService = categoryService;
+        this.categoryRepository = categoryRepository;
+        this.eventTypeRepository = eventTypeRepository;
+        this.loggedUser = loggedUser;
     }
 
     @Override
@@ -55,9 +60,76 @@ public class EventServiceImpl implements EventService {
     }
 
     @Override
-    public Response<EventResponseDto> createUpdateEvent(EventDto eventDto) {
-        // todo: create/update impl
-        return null;
+    public Response<EventResponseDto> createUpdateEvent(EventRequest eventDto) {
+        try {
+            // todo: handle input validation
+
+            Optional<EventType> optionalEventType = eventTypeRepository.findByType(eventDto.getType());
+
+            if (optionalEventType.isEmpty()){
+                return new Response<>(true, "No event type specified is found", ResponseCode.NO_RECORD_FOUND);
+            }
+
+            Optional<Category> optionalCategory = categoryRepository.findFirstByName(eventDto.getCategory());
+
+            if (optionalCategory.isEmpty()){
+                return new Response<>(true, "No category specified is found", ResponseCode.NO_RECORD_FOUND);
+            }
+
+            Optional<Event> optionalEvent = eventRepository.findFirstByTitle(eventDto.getTitle());
+
+            if (optionalEvent.isEmpty()){
+
+                Event event = eventRepository.save(
+                        Event.builder()
+                                .title(eventDto.getTitle())
+                                .hostedBy(eventDto.getHostedBy())
+                                .hostUrl(eventDto.getHostUrl())
+                                .location(eventDto.getLocation())
+                                .about(eventDto.getAbout())
+                                .type(optionalEventType.get())
+                                .category(optionalCategory.get())
+                                .status(EventStatus.UPCOMING)
+                                .url(eventDto.getUrl())
+                                .picUrl(eventDto.getPicUrl())
+                                // starting date and ending
+                                .startingDate(eventDto.getStartDate())
+                                .startingTime(eventDto.getStartTime())
+                                .build()
+                );
+
+                return new Response<>(false, "Successfully added a new event", ResponseCode.SUCCESS, eventMapper.eventToDto(event));
+            }else {
+                UserAccount userAccount = loggedUser.getUser();
+
+                if (userAccount == null){
+                    return new Response<>(true, "Anonymous user, full authentication is required", ResponseCode.UNAUTHORIZED);
+                }
+
+                if (!userAccount.getUserType().equals( "SUPER_ADMIN")){
+                    return new Response<>(true, "Updating request need super admin authentication", ResponseCode.UNAUTHORIZED);
+                }
+
+                Event event = optionalEvent.get();
+                event.setTitle(eventDto.getTitle());
+                event.setHostedBy(eventDto.getHostedBy());
+                event.setHostUrl(eventDto.getHostUrl());
+                event.setStartingDate(eventDto.getStartDate());
+                event.setStartingTime(eventDto.getStartTime());
+                event.setLocation(eventDto.getLocation());
+                event.setAbout(eventDto.getAbout());
+                event.setType(optionalEventType.get());
+                event.setCategory(optionalCategory.get());
+                event.setUrl(eventDto.getUrl());
+                event.setPicUrl(eventDto.getPicUrl());
+
+                EventResponseDto  responseDto = eventMapper.eventToDto(eventRepository.save(event));
+                return new Response<>(false, "Successfully updated event", ResponseCode.SUCCESS, responseDto);
+            }
+
+        } catch (Exception e) {
+            return new Response<>(true, "Failed to create/update event with root cause: \n" + e.getMessage(), ResponseCode.FAIL);
+        }
     }
 
     @Override
@@ -74,9 +146,6 @@ public class EventServiceImpl implements EventService {
 
             Event event = optionalEvent.get();
 
-
-            //            boolean ok = categoryService.decreaseEventCount(event.getCategory().getUuid()).isError();
-
             eventRepository.deleteById(event.getId());
 
             return new Response<>(false, ResponseCode.SUCCESS, "Event deleted successfully");
@@ -86,24 +155,24 @@ public class EventServiceImpl implements EventService {
     }
 
     @Override
-    public Page<EventResponseDto> getAllEvents(Pageable pageable) {
+    public Response<?> getAllEvents(Pageable pageable) {
         try {
-            return eventRepository.findAll(pageable).map(eventMapper::eventToDto);
+            Page<EventResponseDto> eventResponse = eventRepository.findAll(pageable).map(eventMapper::eventToDto);
+            return new Response<>(false, ResponseCode.SUCCESS, eventResponse);
         }catch (Exception e){
-            e.printStackTrace();
+            return new Response<>(true, "Failed to get all events with cause: \n"+e.getMessage(), ResponseCode.FAIL);
         }
-        return new PageImpl<>(new ArrayList<>());
     }
 
     @Override
     public Response<?> getEventsByCategoryUuid(String uuid, Pageable pageable) {
         try {
-            // todo: check how to solve this
+
             if (uuid == null){
                 return new Response<>(true, "Argument should not be null", ResponseCode.NULL_ARGUMENT);
             }
 
-            Optional<Category> optionalCategory = categoryService.findCategory(uuid);
+            Optional<Category> optionalCategory = categoryRepository.findFirstByUuid(uuid);
             if (optionalCategory.isEmpty()){
                 return new Response<>(true, "No category found", ResponseCode.NO_RECORD_FOUND);
             }

@@ -1,10 +1,8 @@
 package hud.app.event_management.serviceImpl;
 
-import hud.app.event_management.dto.request.UserEventRequestDto;
+import hud.app.event_management.dto.request.UserEventRequest;
 import hud.app.event_management.dto.response.EventResponseDto;
 import hud.app.event_management.mappers.EventMapper;
-import hud.app.event_management.model.Event;
-import hud.app.event_management.model.EventStatus;
 import hud.app.event_management.model.UserAccount;
 import hud.app.event_management.model.UserEvent;
 import hud.app.event_management.repository.UserAccountRepository;
@@ -13,35 +11,29 @@ import hud.app.event_management.service.UserEventService;
 import hud.app.event_management.utils.Response;
 import hud.app.event_management.utils.ResponseCode;
 import hud.app.event_management.utils.userExtractor.LoggedUser;
-import org.apache.catalina.User;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.security.core.parameters.P;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 @Service
 public class UserEventServiceImpl implements UserEventService {
 
-    private final UserAccountRepository userAccountRepository;
     private final UserEventRepository userEventRepository;
     private final LoggedUser loggedUser;
     private final EventMapper eventMapper;
 
     @Autowired
-    public UserEventServiceImpl(UserAccountRepository userAccountRepository, UserEventRepository userEventRepository, LoggedUser loggedUser, EventMapper eventMapper) {
-        this.userAccountRepository = userAccountRepository;
+    public UserEventServiceImpl(UserEventRepository userEventRepository, LoggedUser loggedUser, EventMapper eventMapper) {
         this.userEventRepository = userEventRepository;
         this.loggedUser = loggedUser;
         this.eventMapper = eventMapper;
     }
 
     @Override
-    public Response<UserEvent> createUpdateUserEvent(UserEventRequestDto userEventRequestDto) {
+    public Response<UserEvent> createUpdateUserEvent(UserEventRequest userEventRequest) {
         return null;
     }
 

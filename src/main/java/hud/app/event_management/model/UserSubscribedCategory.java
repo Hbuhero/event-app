@@ -1,11 +1,10 @@
 package hud.app.event_management.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
 import lombok.*;
 import org.hibernate.annotations.ResultCheckStyle;
 import org.hibernate.annotations.SQLDelete;
@@ -19,14 +18,14 @@ import java.io.Serializable;
 @Getter
 @ToString
 @Builder
-@Entity(name = "user_subscribed_category")
+@Entity
+@Table(name = "user_subscribed_category")
 @SQLDelete(sql = "UPDATE user_accounts SET deleted = true WHERE id = ?", check = ResultCheckStyle.COUNT)
 @Where(clause = "deleted = false")
-public class UserSubscribedCategories extends BaseEntity implements Serializable {
+public class UserSubscribedCategory extends BaseEntity implements Serializable {
 
     @ManyToOne
     @JoinColumn(name = "user_account")
-    @JsonIgnore
     private UserAccount userAccount;
 
     @ManyToOne

@@ -6,17 +6,17 @@ import hud.app.event_management.model.UserAccount;
 import hud.app.event_management.utils.Response;
 
 public interface AuthService {
-    Response<String> register(UserAccountDto userAccountDto);
+    Response<String> register(UserAccountRequest userAccountDto);
 
-    Response<LoginResponseDto> login(LoginRequestDto loginRequestDto);
+    Response<LoginResponseDto> login(LoginRequest loginRequest);
 
-    Response<String> validateOTP(OTPRequestDto otpRequestDto);
+    Response<String> validateOTP(OTPRequest otpRequest);
 
     Response<String> forgetPassword(String username);
 
-    Response<String> resetPassword(PasswordRequestDto passwordRequestDto);
+    Response<String> resetPassword(PasswordRequest passwordRequestDto);
 
-    Response<UserAccount> activateAccount(ActivationRequestDTO activationRequestDTO);
+    Response<UserAccount> activateAccount(ActivationRequest activationRequest);
 
     Response<String> resendOTP(String username);
 

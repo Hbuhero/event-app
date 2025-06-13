@@ -5,6 +5,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
@@ -24,20 +25,8 @@ import java.util.List;
 
 @Configuration
 @EnableWebSecurity
-@EnableMethodSecurity(
-        prePostEnabled = true
-)
 @RequiredArgsConstructor
 public class SecurityConfiguration {
-
-    private final String[] openApis = {
-            "/api/v1/auth/**",
-            "/api/v1/category/all-categories",
-            "/api/v1/event/all",
-            "/api/v1/event/random",
-            "/api/v1/event/category/{uuid}"
-
-    };
 
     @Autowired
     private final JwtAuthenticationFilter jwtAuthFilter;
@@ -50,12 +39,10 @@ public class SecurityConfiguration {
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception{
-            http.csrf(AbstractHttpConfigurer::disable)
+            http
+                    .csrf(AbstractHttpConfigurer::disable)
                     .cors(corsPolicy -> corsPolicy.configure(http))
-                    .authorizeHttpRequests(auth -> auth
-                                .requestMatchers(openApis).permitAll()
-                                .anyRequest().authenticated()
-                    )
+//                    .authorizeHttpRequests(request -> request.anyRequest().authenticated())
                     .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                     .authenticationProvider(authenticationProvider)
                     .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class );

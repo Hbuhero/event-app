@@ -1,6 +1,6 @@
 package hud.app.event_management.service;
 
-import hud.app.event_management.dto.request.UserAccountDto;
+import hud.app.event_management.dto.request.UserAccountRequest;
 import hud.app.event_management.model.UserAccount;
 import hud.app.event_management.utils.Response;
 import org.springframework.data.domain.Page;
@@ -11,7 +11,7 @@ public interface UserAccountService {
 
     Response<String> deleteUserByUuid(String uuid);
 
-    Response<UserAccount> createUpdateUserAccount(UserAccountDto userAccountDto);
+    Response<UserAccount> createUpdateUserAccount(UserAccountRequest userAccountDto);
 
     Response<UserAccount> getUserByUuid(String uuid);
 

@@ -97,7 +97,27 @@ public class EventTypeServiceImpl implements EventTypeService {
     }
 
     @Override
-    public Response<EventTypeResponseDto> createUpdateEventType(String eventType) {
-        return null;
+    public Response<EventTypeResponseDto> createUpdateEventType(String type) {
+        try {
+            Optional<EventType> optionalEventType = eventTypeRepository.findFirstByType(type);
+            if (optionalEventType.isPresent()){
+                EventType eventType = optionalEventType.get();
+                eventType.setType(type);
+                EventTypeResponseDto responseDto = eventTypeMapper.toDto(eventTypeRepository.save(eventType));
+
+                return new Response<>(false, "Created event type successfully", ResponseCode.SUCCESS, responseDto);
+
+            }else{
+                EventTypeResponseDto eventType = eventTypeMapper.toDto(eventTypeRepository.save(
+                        EventType.builder()
+                                .type(type)
+                                .build()
+                ));
+
+                return new Response<>(false, "Created event type successfully", ResponseCode.SUCCESS, eventType);
+            }
+        } catch (Exception e) {
+            return new Response<>(true, "Failed to create/update event type with cause: \n"+e.getMessage(), ResponseCode.FAIL);
+        }
     }
 }

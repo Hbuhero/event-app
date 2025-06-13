@@ -1,10 +1,8 @@
 package hud.app.event_management.controller;
 
-import hud.app.event_management.dto.request.ClubRequestDto;
+import hud.app.event_management.dto.request.ClubRequest;
 import hud.app.event_management.dto.response.ClubResponseDto;
 import hud.app.event_management.dto.response.EventResponseDto;
-import hud.app.event_management.model.Club;
-import hud.app.event_management.model.Event;
 import hud.app.event_management.service.ClubService;
 import hud.app.event_management.utils.Response;
 import hud.app.event_management.utils.paginationUtils.PageableConfig;
@@ -27,8 +25,8 @@ public class ClubController {
     }
 
     @PostMapping("/create-update")
-    private Response<ClubResponseDto> createUpdateClub(@RequestBody ClubRequestDto clubRequestDto){
-        return clubService.createUpdateClub(clubRequestDto);
+    private Response<ClubResponseDto> createUpdateClub(@RequestBody ClubRequest clubRequest){
+        return clubService.createUpdateClub(clubRequest);
     }
 
     @PostMapping("/delete/{uuid}")

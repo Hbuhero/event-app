@@ -6,7 +6,9 @@ import org.hibernate.annotations.SQLDelete;
 import org.hibernate.annotations.Where;
 
 import java.io.Serializable;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.List;
 
 @Entity
@@ -26,11 +28,14 @@ public class Event extends BaseEntity implements Serializable {
     @Column(name = "hosted_by", nullable = false)
     private String hostedBy;
 
-    @Column(name = "start_date", nullable = false)
-    private LocalDateTime startingDate;
+    @Column(name = "hosted_url")
+    private String hostUrl;
 
-    @Column(name = "end_date", nullable = false)
-    private LocalDateTime endingDate;
+    @Column(name = "start_date", nullable = false)
+    private LocalDate startingDate;
+
+    @Column(name = "start_time")
+    private LocalTime startingTime;
 
     @Column(name = "location", nullable = false)
     private String location;
