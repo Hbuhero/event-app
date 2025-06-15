@@ -1,7 +1,6 @@
 package hud.app.event_management.serviceImpl;
 
 import hud.app.event_management.dto.request.EventRequest;
-import hud.app.event_management.dto.request.UserAccountRequest;
 import hud.app.event_management.dto.response.EventResponseDto;
 import hud.app.event_management.mappers.EventMapper;
 import hud.app.event_management.model.*;
@@ -11,7 +10,6 @@ import hud.app.event_management.repository.EventTypeRepository;
 import hud.app.event_management.service.EventService;
 import hud.app.event_management.utils.Response;
 import hud.app.event_management.utils.ResponseCode;
-import hud.app.event_management.utils.userExtractor.LoggedUser;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -28,15 +26,14 @@ public class EventServiceImpl implements EventService {
     private final EventMapper eventMapper;
     private final CategoryRepository categoryRepository;
     private final EventTypeRepository eventTypeRepository;
-    private final LoggedUser loggedUser;
+
 
     @Autowired
-    public EventServiceImpl(EventRepository eventRepository, EventMapper eventMapper, CategoryRepository categoryRepository, EventTypeRepository eventTypeRepository, LoggedUser loggedUser) {
+    public EventServiceImpl(EventRepository eventRepository, EventMapper eventMapper, CategoryRepository categoryRepository, EventTypeRepository eventTypeRepository) {
         this.eventRepository = eventRepository;
         this.eventMapper = eventMapper;
         this.categoryRepository = categoryRepository;
         this.eventTypeRepository = eventTypeRepository;
-        this.loggedUser = loggedUser;
     }
 
     @Override
@@ -60,7 +57,7 @@ public class EventServiceImpl implements EventService {
     }
 
     @Override
-    public Response<EventResponseDto> createUpdateEvent(EventRequest eventDto) {
+    public Response<EventResponseDto> createUpdateEvent(UserAccount userAccount, EventRequest eventDto) {
         try {
             // todo: handle input validation
 
@@ -100,14 +97,13 @@ public class EventServiceImpl implements EventService {
 
                 return new Response<>(false, "Successfully added a new event", ResponseCode.SUCCESS, eventMapper.eventToDto(event));
             }else {
-                UserAccount userAccount = loggedUser.getUser();
 
                 if (userAccount == null){
                     return new Response<>(true, "Anonymous user, full authentication is required", ResponseCode.UNAUTHORIZED);
                 }
 
                 if (!userAccount.getUserType().equals( "SUPER_ADMIN")){
-                    return new Response<>(true, "Updating request need super admin authentication", ResponseCode.UNAUTHORIZED);
+                    return new Response<>(true, "Updating request need super admin restrict access", ResponseCode.UNAUTHORIZED);
                 }
 
                 Event event = optionalEvent.get();

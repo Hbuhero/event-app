@@ -1,5 +1,6 @@
 package hud.app.event_management.controller;
 
+import hud.app.event_management.annotations.loggedUser.LoggedUser;
 import hud.app.event_management.dto.response.ClubResponseDto;
 import hud.app.event_management.dto.response.UserAccountResponseDto;
 import hud.app.event_management.model.UserAccount;
@@ -24,13 +25,13 @@ public class ClubSubscriptionController {
     }
 
     @PostMapping("/subscribe/{uuid}")
-    private Response<String> subscribe(@PathVariable("uuid") String uuid){
-        return subscriptionService.subscribe(uuid);
+    private Response<String> subscribe(@LoggedUser UserAccount userAccount, @PathVariable("uuid") String uuid){
+        return subscriptionService.subscribe(userAccount, uuid);
     }
 
     @PostMapping("/unsubscribe/{uuid}")
-    private Response<String> unsubscribe(@PathVariable("uuid") String uuid){
-        return subscriptionService.unsubscribe(uuid);
+    private Response<String> unsubscribe(@LoggedUser UserAccount userAccount, @PathVariable("uuid") String uuid){
+        return subscriptionService.unsubscribe(userAccount, uuid);
     }
 
     @GetMapping("/{uuid}/subscribers")
@@ -40,9 +41,9 @@ public class ClubSubscriptionController {
     }
 
     @GetMapping("/user/clubs")
-    private Response<ClubResponseDto> getUserSubscribedClubs(@RequestBody PageableParam pageableParam){
+    private Response<ClubResponseDto> getUserSubscribedClubs(@LoggedUser UserAccount userAccount, @RequestBody PageableParam pageableParam){
         Pageable pageable = pageableConfig.pageable(pageableParam);
-        return subscriptionService.getUserSubscribedClubs(pageable);
+        return subscriptionService.getUserSubscribedClubs(userAccount, pageable);
     }
 
 }

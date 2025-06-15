@@ -1,8 +1,7 @@
 package hud.app.event_management.configurations;
 
-import hud.app.event_management.repository.UserAccountRepository;
-import hud.app.event_management.utils.userExtractor.LoggedUser;
-import hud.app.event_management.utils.userExtractor.LoggedUserResolver;
+import hud.app.event_management.annotations.loggedUser.LoggedUserImpl;
+import hud.app.event_management.annotations.loggedUser.LoggedUserResolver;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.method.support.HandlerMethodArgumentResolver;
@@ -14,9 +13,9 @@ import java.util.List;
 public class WebMvcConfig implements WebMvcConfigurer {
 
     @Autowired
-    private final LoggedUser loggedUser;
+    private final LoggedUserImpl loggedUser;
 
-    public WebMvcConfig(LoggedUser loggedUser) {
+    public WebMvcConfig(LoggedUserImpl loggedUser) {
         this.loggedUser = loggedUser;
     }
 

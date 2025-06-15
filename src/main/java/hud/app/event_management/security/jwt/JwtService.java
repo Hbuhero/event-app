@@ -1,4 +1,4 @@
-package hud.app.event_management.jwt;
+package hud.app.event_management.security.jwt;
 
 import java.security.Key;
 import java.util.Date;

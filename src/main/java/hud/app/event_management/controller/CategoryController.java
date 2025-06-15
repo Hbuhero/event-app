@@ -1,11 +1,14 @@
 package hud.app.event_management.controller;
 
+import hud.app.event_management.annotations.loggedUser.LoggedUser;
 import hud.app.event_management.dto.request.CategoryRequest;
 import hud.app.event_management.dto.response.CategoryResponseDto;
+import hud.app.event_management.model.UserAccount;
 import hud.app.event_management.service.CategoryService;
 import hud.app.event_management.utils.Response;
 import hud.app.event_management.utils.paginationUtils.PageableConfig;
 import hud.app.event_management.utils.paginationUtils.PageableParam;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -38,7 +41,7 @@ public class CategoryController {
 
     @PostMapping("/create-update")
     @PreAuthorize("hasRole('SUPER_ADMIN')")
-    private Response<CategoryResponseDto> createUpdateCategory(@RequestBody CategoryRequest categoryRequest){
+    private Response<CategoryResponseDto> createUpdateCategory(@Valid @RequestBody CategoryRequest categoryRequest){
         return categoryService.createUpdateCategory(categoryRequest);
     }
 
@@ -56,21 +59,21 @@ public class CategoryController {
 
     @GetMapping("/user-preference")
     @PreAuthorize("hasRole('USER')")
-    private Response<?> getUserSubscribedCategory(PageableParam pageableParam){
+    private Response<?> getUserSubscribedCategory(@LoggedUser UserAccount userAccount, PageableParam pageableParam){
         Pageable pageable = pageableConfig.pageable(pageableParam);
-        return categoryService.getUserSubscribedCategories(pageable);
+        return categoryService.getUserSubscribedCategories(userAccount,pageable);
     }
 
     @PostMapping("/user-preference/add/{uuid}")
     @PreAuthorize("hasRole('USER')")
-    private Response<String> addUserPreference(@PathVariable("uuid") String uuid){
-        return categoryService.addUserPreference(uuid);
+    private Response<String> addUserPreference(@LoggedUser UserAccount userAccount, @PathVariable("uuid") String uuid){
+        return categoryService.addUserPreference(userAccount,uuid);
     }
 
     @PostMapping("/user-preference/delete/{uuid}")
     @PreAuthorize("hasRole('USER')")
-    private Response<String> removeUserPreference(@PathVariable("uuid") String uuid){
-        return categoryService.removeUserPreference(uuid);
+    private Response<String> removeUserPreference(@LoggedUser UserAccount userAccount, @PathVariable("uuid") String uuid){
+        return categoryService.removeUserPreference(userAccount,uuid);
     }
 
 }

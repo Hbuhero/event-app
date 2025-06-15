@@ -1,12 +1,12 @@
 package hud.app.event_management.serviceImpl;
 
-import hud.app.event_management.dto.request.UserAccountRequest;
+import hud.app.event_management.dto.request.UserAccountRegistrationRequest;
+import hud.app.event_management.dto.request.UserAccountUpdateRequest;
 import hud.app.event_management.model.UserAccount;
 import hud.app.event_management.repository.UserAccountRepository;
 import hud.app.event_management.service.UserAccountService;
 import hud.app.event_management.utils.Response;
 import hud.app.event_management.utils.ResponseCode;
-import hud.app.event_management.utils.userExtractor.LoggedUser;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -20,7 +20,7 @@ import java.util.Optional;
 public class UserAccountServiceImpl implements UserAccountService {
 
     private final UserAccountRepository userAccountRepository;
-    private LoggedUser loggedUser;
+
 
     @Autowired
     public UserAccountServiceImpl(UserAccountRepository userAccountRepository){
@@ -28,9 +28,9 @@ public class UserAccountServiceImpl implements UserAccountService {
     }
 
     @Override
-    public Response<String> deleteUserByUuid(String uuid) {
+    public Response<String> deleteUserByUuid( UserAccount userAccount, String uuid) {
         try {
-            UserAccount userAccount = loggedUser.getUser();
+
             if (userAccount == null){
                 return new Response<>(true, "Full authorization is required", ResponseCode.UNAUTHORIZED);
             }
@@ -52,9 +52,9 @@ public class UserAccountServiceImpl implements UserAccountService {
     }
 
     @Override
-    public Response<UserAccount> createUpdateUserAccount(UserAccountRequest userAccountDto) {
+    public Response<UserAccount> updateUserAccount(UserAccount userAccount, UserAccountUpdateRequest userAccountDto) {
         try {
-            UserAccount userAccount = loggedUser.getUser();
+
             if (userAccount == null) {
                 return new Response<>(true, "Anonymous user, full authentication is required", ResponseCode.UNAUTHORIZED);
             }

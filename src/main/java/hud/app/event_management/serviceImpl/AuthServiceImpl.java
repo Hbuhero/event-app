@@ -2,14 +2,13 @@ package hud.app.event_management.serviceImpl;
 
 import hud.app.event_management.dto.request.*;
 import hud.app.event_management.dto.response.LoginResponseDto;
-import hud.app.event_management.jwt.JwtService;
+import hud.app.event_management.security.jwt.JwtService;
 import hud.app.event_management.model.UserAccount;
 import hud.app.event_management.repository.UserAccountRepository;
 import hud.app.event_management.service.AuthService;
 import hud.app.event_management.userDetailService.UserDetailsImpl;
 import hud.app.event_management.utils.Response;
 import hud.app.event_management.utils.ResponseCode;
-import hud.app.event_management.utils.userExtractor.LoggedUser;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -32,30 +31,30 @@ public class AuthServiceImpl implements AuthService {
     private final AuthenticationManager authenticationManager;
     private final JwtService jwtService;
 
-    private final LoggedUser loggedUser;
+
 
     @Autowired
-    public AuthServiceImpl(UserAccountRepository userAccountRepository, PasswordEncoder passwordEncoder, AuthenticationManager authenticationManager, JwtService jwtService, LoggedUser loggedUser){
+    public AuthServiceImpl(UserAccountRepository userAccountRepository, PasswordEncoder passwordEncoder, AuthenticationManager authenticationManager, JwtService jwtService){
         this.userAccountRepository = userAccountRepository;
         this.passwordEncoder = passwordEncoder;
         this.authenticationManager = authenticationManager;
         this.jwtService = jwtService;
-        this.loggedUser = loggedUser;
+
     }
     @Override
-    public Response<String> register(UserAccountRequest userAccountDto) {
+    public Response<String> register(UserAccountRegistrationRequest userAccountDto) {
         try {
             // todo: validate null values
-            Optional<UserAccount> optionalUserAccount = userAccountRepository.findFirstByUsername(userAccountDto.getEmail());
+            Optional<UserAccount> optionalUserAccount = userAccountRepository.findFirstByUsernameOrPhone(userAccountDto.getEmail(), userAccountDto.getPhone());
             // todo: validate email
             if(optionalUserAccount.isPresent()){
-                return new Response<>(true, "Email already exists", ResponseCode.DUPLICATE_EMAIL);
+                return new Response<>(true, "Email or phone number already exists", ResponseCode.DUPLICATE_EMAIL);
             }
             // todo: validate phone number
-            Optional<UserAccount> accountOptional = userAccountRepository.findFirstByPhone(userAccountDto.getPhone());
-            if (accountOptional.isPresent()){
-                return new Response<>(true, "Phone number already exists", ResponseCode.DUPLICATE);
-            }
+//            Optional<UserAccount> accountOptional = userAccountRepository.findFirstByPhone(userAccountDto.getPhone());
+//            if (accountOptional.isPresent()){
+//                return new Response<>(true, "Phone number already exists", ResponseCode.DUPLICATE);
+//            }
 
             UserAccount userAccount = UserAccount.builder()
                     .firstName(userAccountDto.getFirstname())
@@ -112,14 +111,14 @@ public class AuthServiceImpl implements AuthService {
     }
 
     @Override
-    public Response<String> validateOTP(OTPRequest otpRequest) {
+    public Response<String> validateOTP(OTPVerificationRequest otpVerificationRequest) {
         try {
             // todo: validate null values
-            if (otpRequest.getOtp().isBlank() || otpRequest.getUsername().isBlank()){
+            if (otpVerificationRequest.getOtp().isBlank() || otpVerificationRequest.getUsername().isBlank()){
                 return new Response<>(true, "Username or OTP must not be empty", ResponseCode.NULL_ARGUMENT);
             }
 
-            Optional<UserAccount> optionalUserAccount = userAccountRepository.findFirstByUsername(otpRequest.getUsername());
+            Optional<UserAccount> optionalUserAccount = userAccountRepository.findFirstByUsername(otpVerificationRequest.getUsername());
             if (optionalUserAccount.isEmpty()){
                 return new Response<>(true, "User not found", ResponseCode.USER_NOT_FOUND);
             }
@@ -135,7 +134,7 @@ public class AuthServiceImpl implements AuthService {
                 return new Response<>(true, "OTP is has expired, request new OTP", ResponseCode.FAIL);
             }
             // is the otp valid
-            if (!otpRequest.getOtp().equals(userAccount.getOneTimePassword())){
+            if (!otpVerificationRequest.getOtp().equals(userAccount.getOneTimePassword())){
                 return new Response<>(true, "Invalid or wrong OTP", ResponseCode.FAIL);
             }
 
@@ -175,15 +174,15 @@ public class AuthServiceImpl implements AuthService {
     }
 
     @Override
-    public Response<String> resetPassword(PasswordRequest passwordRequestDto) {
+    public Response<String> resetPassword(PasswordResetRequest passwordResetRequestDto) {
         try {
-            if (passwordRequestDto.getPassword().isBlank() || passwordRequestDto.getUsername().isBlank()){
+            if (passwordResetRequestDto.getPassword().isBlank() || passwordResetRequestDto.getUsername().isBlank()){
                 return new Response<>(true, "Username and password must not be null", ResponseCode.NULL_ARGUMENT);
             }
 
             // todo: validate email
 
-            Optional<UserAccount> optionalUserAccount = userAccountRepository.findFirstByUsername(passwordRequestDto.getUsername());
+            Optional<UserAccount> optionalUserAccount = userAccountRepository.findFirstByUsername(passwordResetRequestDto.getUsername());
 
             if (optionalUserAccount.isEmpty()){
                 return new Response<>(true, "User not found", ResponseCode.USER_NOT_FOUND);
@@ -195,7 +194,7 @@ public class AuthServiceImpl implements AuthService {
                 return new Response<>(true, "Code is not verified", ResponseCode.FAIL);
             }
 
-            userAccount.setPassword(passwordEncoder.encode(passwordRequestDto.getPassword()));
+            userAccount.setPassword(passwordEncoder.encode(passwordResetRequestDto.getPassword()));
             userAccountRepository.save(userAccount);
             return new Response<>(false, "Password reset successfully", ResponseCode.SUCCESS);
         } catch (Exception e) {
@@ -206,7 +205,7 @@ public class AuthServiceImpl implements AuthService {
     @Override
     public Response<UserAccount> activateAccount(ActivationRequest activationRequest) {
         try{
-            if (activationRequest.getUsername().isBlank() || activationRequest.getOpt().isBlank()){
+            if (activationRequest.getUsername().isBlank() || activationRequest.getOtp().isBlank()){
                 return new Response<>(true, "Username and OTP cant not be null", ResponseCode.FAIL);
             }
 
@@ -225,7 +224,7 @@ public class AuthServiceImpl implements AuthService {
               return new Response<>(true, "Invalid OTP, code already expired", ResponseCode.FAIL);
             }
 
-            if (!activationRequest.getOpt().equalsIgnoreCase(userAccount.getOneTimePassword())){
+            if (!activationRequest.getOtp().equalsIgnoreCase(userAccount.getOneTimePassword())){
                 return new Response<>(true, "OTP is invalid, please try again", ResponseCode.FAIL);
             }
 
@@ -277,10 +276,8 @@ public class AuthServiceImpl implements AuthService {
     }
 
     @Override
-    public Response<UserAccount> getLoggedUser() {
+    public Response<UserAccount> getLoggedUser(UserAccount userAccount) {
         try {
-            UserAccount userAccount = loggedUser.getUser();
-
             if (userAccount == null){
                 return new Response<>(true, "Unauthorized anonymous user", ResponseCode.UNAUTHORIZED);
             }

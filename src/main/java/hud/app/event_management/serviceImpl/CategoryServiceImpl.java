@@ -11,7 +11,6 @@ import hud.app.event_management.repository.UserSubscribedCategoryRepository;
 import hud.app.event_management.service.CategoryService;
 import hud.app.event_management.utils.Response;
 import hud.app.event_management.utils.ResponseCode;
-import hud.app.event_management.utils.userExtractor.LoggedUser;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -23,15 +22,14 @@ import java.util.Optional;
 public class CategoryServiceImpl implements CategoryService {
     private final CategoryRepository categoryRepository;
     private final CategoryMapper categoryMapper;
-    private final LoggedUser loggedUser;
+
     private final UserSubscribedCategoryRepository userSubscribedCategoryRepository;
 
     @Autowired
     public CategoryServiceImpl(CategoryRepository categoryRepository,
-                               CategoryMapper categoryMapper, LoggedUser loggedUser, UserSubscribedCategoryRepository userSubscribedCategoryRepository) {
+                               CategoryMapper categoryMapper, UserSubscribedCategoryRepository userSubscribedCategoryRepository) {
         this.categoryRepository = categoryRepository;
         this.categoryMapper = categoryMapper;
-        this.loggedUser = loggedUser;
         this.userSubscribedCategoryRepository = userSubscribedCategoryRepository;
     }
 
@@ -142,9 +140,9 @@ public class CategoryServiceImpl implements CategoryService {
     }
 
     @Override
-    public Response<?> getUserSubscribedCategories(Pageable pageable) {
+    public Response<?> getUserSubscribedCategories(UserAccount userAccount, Pageable pageable) {
         try {
-            UserAccount userAccount = loggedUser.getUser();
+
             if (userAccount == null){
                 return new Response<>(true, "Anonymous user, full authentication is required", ResponseCode.UNAUTHORIZED);
             }
@@ -158,9 +156,9 @@ public class CategoryServiceImpl implements CategoryService {
     }
 
     @Override
-    public Response<String> addUserPreference(String uuid) {
+    public Response<String> addUserPreference(UserAccount userAccount, String uuid) {
         try {
-            UserAccount userAccount = loggedUser.getUser();
+
             if (userAccount == null){
                 return new Response<>(true, "Anonymous user, full authentication is required", ResponseCode.UNAUTHORIZED);
             }
@@ -195,9 +193,9 @@ public class CategoryServiceImpl implements CategoryService {
     }
 
     @Override
-    public Response<String> removeUserPreference(String uuid) {
+    public Response<String> removeUserPreference(UserAccount userAccount, String uuid) {
         try {
-            UserAccount userAccount = loggedUser.getUser();
+
             if (userAccount == null){
                 return new Response<>(true, "Anonymous user, full authentication is required", ResponseCode.UNAUTHORIZED);
             }

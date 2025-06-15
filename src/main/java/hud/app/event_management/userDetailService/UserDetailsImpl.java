@@ -2,7 +2,7 @@ package hud.app.event_management.userDetailService;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import hud.app.event_management.model.UserAccount;
-import hud.app.event_management.utils.Roles;
+import hud.app.event_management.security.Roles;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import lombok.AllArgsConstructor;
@@ -10,7 +10,6 @@ import lombok.Getter;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.stereotype.Service;
 
 import java.util.Collection;
 import java.util.Collections;

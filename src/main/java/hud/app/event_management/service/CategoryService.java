@@ -2,6 +2,7 @@ package hud.app.event_management.service;
 
 import hud.app.event_management.dto.request.CategoryRequest;
 import hud.app.event_management.dto.response.CategoryResponseDto;
+import hud.app.event_management.model.UserAccount;
 import hud.app.event_management.utils.Response;
 import org.springframework.data.domain.Pageable;
 
@@ -17,9 +18,9 @@ public interface CategoryService {
 
     Response<CategoryResponseDto> getCategoryByName(String name);
 
-    Response<?> getUserSubscribedCategories(Pageable pageable);
+    Response<?> getUserSubscribedCategories(UserAccount userAccount, Pageable pageable);
 
-    Response<String> addUserPreference(String uuid);
+    Response<String> addUserPreference(UserAccount userAccount, String uuid);
 
-    Response<String> removeUserPreference(String uuid);
+    Response<String> removeUserPreference(UserAccount userAccount, String uuid);
 }

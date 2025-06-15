@@ -1,11 +1,6 @@
-package hud.app.event_management.utils.userExtractor;
+package hud.app.event_management.annotations.loggedUser;
 
-import hud.app.event_management.annotations.CurrentUser;
-import hud.app.event_management.repository.UserAccountRepository;
-import lombok.extern.java.Log;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.MethodParameter;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.support.WebDataBinderFactory;
 import org.springframework.web.context.request.NativeWebRequest;
 import org.springframework.web.method.support.HandlerMethodArgumentResolver;
@@ -13,15 +8,15 @@ import org.springframework.web.method.support.ModelAndViewContainer;
 
 public class LoggedUserResolver implements HandlerMethodArgumentResolver {
 
-    private final LoggedUser loggedUser;
+    private final LoggedUserImpl loggedUser;
 
-    public LoggedUserResolver(LoggedUser loggedUser) {
+    public LoggedUserResolver(LoggedUserImpl loggedUser) {
         this.loggedUser = loggedUser;
     }
 
     @Override
     public boolean supportsParameter(MethodParameter parameter) {
-        return parameter.hasParameterAnnotation(CurrentUser.class);
+        return parameter.hasParameterAnnotation(LoggedUser.class);
     }
 
     @Override

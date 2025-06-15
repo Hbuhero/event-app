@@ -2,13 +2,14 @@ package hud.app.event_management.service;
 
 import hud.app.event_management.dto.request.EventRequest;
 import hud.app.event_management.dto.response.EventResponseDto;
+import hud.app.event_management.model.UserAccount;
 import hud.app.event_management.utils.Response;
 import org.springframework.data.domain.Pageable;
 
 public interface EventService {
     Response<EventResponseDto> getEventByName(String name);
 
-    Response<EventResponseDto> createUpdateEvent(EventRequest eventDto);
+    Response<EventResponseDto> createUpdateEvent(UserAccount userAccount, EventRequest eventDto);
 
     Response<String> deleteEventByUuid(String uuid);
 

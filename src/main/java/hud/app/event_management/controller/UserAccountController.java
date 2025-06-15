@@ -1,15 +1,16 @@
 package hud.app.event_management.controller;
 
-import hud.app.event_management.annotations.CurrentUser;
-import hud.app.event_management.dto.request.UserAccountRequest;
+import hud.app.event_management.annotations.loggedUser.LoggedUser;
+import hud.app.event_management.dto.request.PasswordResetRequest;
+import hud.app.event_management.dto.request.UserAccountRegistrationRequest;
+import hud.app.event_management.dto.request.UserAccountUpdateRequest;
 import hud.app.event_management.model.UserAccount;
 import hud.app.event_management.service.AuthService;
 import hud.app.event_management.service.UserAccountService;
 import hud.app.event_management.utils.Response;
 import hud.app.event_management.utils.paginationUtils.PageableConfig;
 import hud.app.event_management.utils.paginationUtils.PageableParam;
-import hud.app.event_management.utils.userExtractor.LoggedUser;
-import org.apache.catalina.User;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -32,7 +33,7 @@ public class UserAccountController {
     // get all users
     @GetMapping("/all")
     @PreAuthorize("hasRole('SUPER_ADMIN')")
-    private Page<UserAccount> getAllUsers(@RequestBody PageableParam pageableParam){
+    private Page<UserAccount> getAllUsers(PageableParam pageableParam){
         Pageable pageable = pageableConfig.pageable(pageableParam);
         return userAccountService.getAllUsers(pageable);
     }
@@ -47,27 +48,27 @@ public class UserAccountController {
     // edit profile
     @PostMapping("/create-update")
     @PreAuthorize("hasRole('USER')")
-    private Response<UserAccount> createUpdateUserAccount(@RequestBody UserAccountRequest userAccountDto){
-        return userAccountService.createUpdateUserAccount(userAccountDto);
+    private Response<UserAccount> createUpdateUserAccount(@LoggedUser UserAccount userAccount, @Valid @RequestBody UserAccountUpdateRequest userAccountDto){
+        return userAccountService.updateUserAccount(userAccount, userAccountDto);
     }
 
     // delete user
     @PostMapping("/delete/{uuid}")
     @PreAuthorize("isAuthenticated()")
-    private Response<String> deleteUserByUuid(@PathVariable("uuid") String uuid){
-        return userAccountService.deleteUserByUuid(uuid);
+    private Response<String> deleteUserByUuid(@LoggedUser UserAccount userAccount, @PathVariable("uuid") String uuid){
+        return userAccountService.deleteUserByUuid(userAccount, uuid);
     }
 
     @GetMapping("/profile")
     @PreAuthorize("isAuthenticated()")
-    private Response<UserAccount> getUseProfile(){
-        return authService.getLoggedUser();
+    private Response<UserAccount> getUseProfile(@LoggedUser UserAccount userAccount){
+        return authService.getLoggedUser(userAccount);
     }
 
-    @GetMapping("/try")
-    @PreAuthorize("isAuthenticated")
-    private UserAccount tryi(@CurrentUser UserAccount user){
-        return user;
+    @PostMapping("ok")
+    private PasswordResetRequest test(@Valid @RequestBody PasswordResetRequest passwordResetRequest){
+        return passwordResetRequest;
     }
+
 
 }

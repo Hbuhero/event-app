@@ -9,42 +9,37 @@ import hud.app.event_management.model.ClubSubscribedMembers;
 import hud.app.event_management.model.UserAccount;
 import hud.app.event_management.repository.ClubRepository;
 import hud.app.event_management.repository.ClubSubscribedMembersRepository;
-import hud.app.event_management.repository.UserAccountRepository;
 import hud.app.event_management.service.ClubSubscriptionService;
 import hud.app.event_management.utils.Response;
 import hud.app.event_management.utils.ResponseCode;
-import hud.app.event_management.utils.userExtractor.LoggedUser;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 @Service
 public class ClubSubscriptionServiceImpl implements ClubSubscriptionService {
     private final ClubSubscribedMembersRepository subscriptionRepository;
     private final ClubRepository clubRepository;
-    private final LoggedUser loggedUser;
+
     private final ClubMapper clubMapper;
     private final UserAccountMapper userAccountMapper;
 
     @Autowired
-    public ClubSubscriptionServiceImpl(ClubSubscribedMembersRepository subscriptionRepository, ClubRepository clubRepository, LoggedUser loggedUser, ClubMapper clubMapper, UserAccountMapper userAccountMapper) {
+    public ClubSubscriptionServiceImpl(ClubSubscribedMembersRepository subscriptionRepository, ClubRepository clubRepository, ClubMapper clubMapper, UserAccountMapper userAccountMapper) {
         this.subscriptionRepository = subscriptionRepository;
         this.clubRepository = clubRepository;
-        this.loggedUser = loggedUser;
         this.clubMapper = clubMapper;
         this.userAccountMapper = userAccountMapper;
     }
 
     @Override
-    public Response<String> subscribe(String uuid) {
+    public Response<String> subscribe(UserAccount userAccount, String uuid) {
         try {
-            UserAccount userAccount = loggedUser.getUser();
+
             if (userAccount == null){
                 return new Response<>(true, "Anonymous user, Full authentication is required", ResponseCode.UNAUTHORIZED);
             }
@@ -67,9 +62,9 @@ public class ClubSubscriptionServiceImpl implements ClubSubscriptionService {
     }
 
     @Override
-    public Response<String> unsubscribe(String uuid) {
+    public Response<String> unsubscribe(UserAccount userAccount,String uuid) {
         try {
-            UserAccount userAccount = loggedUser.getUser();
+
             if (userAccount == null){
                 return new Response<>(true, "Anonymous user, Full authentication is required", ResponseCode.UNAUTHORIZED);
             }
@@ -114,9 +109,9 @@ public class ClubSubscriptionServiceImpl implements ClubSubscriptionService {
     }
 
     @Override
-    public Response<ClubResponseDto> getUserSubscribedClubs(Pageable pageable) {
+    public Response<ClubResponseDto> getUserSubscribedClubs(UserAccount userAccount,Pageable pageable) {
         try {
-            UserAccount userAccount = loggedUser.getUser();
+
             if (userAccount == null){
                 return new Response<>(true, "Anonymous user, full authentication is required", ResponseCode.UNAUTHORIZED);
             }

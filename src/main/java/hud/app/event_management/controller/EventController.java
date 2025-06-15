@@ -1,15 +1,15 @@
 package hud.app.event_management.controller;
 
+import hud.app.event_management.annotations.loggedUser.LoggedUser;
 import hud.app.event_management.dto.request.EventRequest;
 import hud.app.event_management.dto.response.EventResponseDto;
-import hud.app.event_management.model.Event;
+import hud.app.event_management.model.UserAccount;
 import hud.app.event_management.service.EventService;
 import hud.app.event_management.utils.Response;
 import hud.app.event_management.utils.paginationUtils.PageableConfig;
 import hud.app.event_management.utils.paginationUtils.PageableParam;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -44,8 +44,8 @@ public class EventController {
     // create event update event
     @PostMapping("create-update")
     @PreAuthorize("isAuthenticated()")
-    private Response<EventResponseDto> createUpdateEvent(@RequestBody EventRequest eventDto){
-        return eventService.createUpdateEvent(eventDto);
+    private Response<EventResponseDto> createUpdateEvent(@LoggedUser UserAccount userAccount, @Valid @RequestBody EventRequest eventDto){
+        return eventService.createUpdateEvent(userAccount, eventDto);
     }
 
     // delete event

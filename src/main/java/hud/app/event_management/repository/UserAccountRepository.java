@@ -13,4 +13,6 @@ public interface UserAccountRepository extends JpaRepository<UserAccount, Long> 
     Optional<UserAccount> findFirstByPhone(String phone);
 
     Optional<UserAccount> findFirstByUuid(String uuid);
+
+    Optional<UserAccount> findFirstByUsernameOrPhone(String email, String phone);
 }

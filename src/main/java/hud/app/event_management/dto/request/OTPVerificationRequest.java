@@ -1,14 +1,13 @@
 package hud.app.event_management.dto.request;
 
+import hud.app.event_management.annotations.ValidEmail;
 import jakarta.validation.constraints.NotBlank;
 import lombok.Getter;
-import lombok.Setter;
 
 @Getter
-@Setter
-public class LoginRequest {
-    @NotBlank
+public class OTPVerificationRequest {
+    @ValidEmail
     private String username;
     @NotBlank
-    private String password;
+    private String otp;
 }

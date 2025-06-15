@@ -1,5 +1,4 @@
-package hud.app.event_management.utils;
-import java.security.Permission;
+package hud.app.event_management.security;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
@@ -10,7 +9,7 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
-import static hud.app.event_management.utils.Permissions.*;
+import static hud.app.event_management.security.Permissions.*;
 
 @RequiredArgsConstructor
 public enum Roles {

@@ -1,4 +1,4 @@
-package hud.app.event_management.utils.userExtractor;
+package hud.app.event_management.dto.response;
 import lombok.*;
 
 @Getter

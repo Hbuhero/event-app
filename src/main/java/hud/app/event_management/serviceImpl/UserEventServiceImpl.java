@@ -5,12 +5,10 @@ import hud.app.event_management.dto.response.EventResponseDto;
 import hud.app.event_management.mappers.EventMapper;
 import hud.app.event_management.model.UserAccount;
 import hud.app.event_management.model.UserEvent;
-import hud.app.event_management.repository.UserAccountRepository;
 import hud.app.event_management.repository.UserEventRepository;
 import hud.app.event_management.service.UserEventService;
 import hud.app.event_management.utils.Response;
 import hud.app.event_management.utils.ResponseCode;
-import hud.app.event_management.utils.userExtractor.LoggedUser;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -22,24 +20,27 @@ import java.util.Optional;
 public class UserEventServiceImpl implements UserEventService {
 
     private final UserEventRepository userEventRepository;
-    private final LoggedUser loggedUser;
+
     private final EventMapper eventMapper;
 
     @Autowired
-    public UserEventServiceImpl(UserEventRepository userEventRepository, LoggedUser loggedUser, EventMapper eventMapper) {
+    public UserEventServiceImpl(UserEventRepository userEventRepository, EventMapper eventMapper) {
         this.userEventRepository = userEventRepository;
-        this.loggedUser = loggedUser;
         this.eventMapper = eventMapper;
     }
 
     @Override
-    public Response<UserEvent> createUpdateUserEvent(UserEventRequest userEventRequest) {
+    public Response<UserEvent> createUpdateUserEvent(UserAccount userAccount,UserEventRequest userEventRequest) {
+        // TODO: implement this
         return null;
     }
 
     @Override
-    public Response<String> deleteByUuid(String uuid) {
+    public Response<String> deleteByUuid(UserAccount userAccount, String uuid) {
         try {
+            if (userAccount == null){
+                return  new Response<>(true, "Anonymous user, full authentication is required", ResponseCode.UNAUTHORIZED);
+            }
             if (uuid == null){
                 return new Response<>(true, "Argument can not be null", ResponseCode.NULL_ARGUMENT);
             }
@@ -49,7 +50,13 @@ public class UserEventServiceImpl implements UserEventService {
                 return new Response<>(true, "No record found", ResponseCode.NO_RECORD_FOUND);
             }
 
-            userEventRepository.delete(optionalUserEvent.get());
+            UserEvent userEvent = optionalUserEvent.get();
+
+            if (!userEvent.getUserAccount().getUuid().equals(userAccount.getUuid())){
+                return new Response<>(true, "User event accessed is not of logged user", ResponseCode.INVALID_REQUEST);
+            }
+
+            userEventRepository.delete(userEvent);
             return new Response<>(false, ResponseCode.SUCCESS, "Deleted successfully");
         } catch (Exception e) {
             return new Response<>(true, "Failed to delete userEvent with cause: \n"+e.getMessage(), ResponseCode.FAIL);
@@ -57,9 +64,9 @@ public class UserEventServiceImpl implements UserEventService {
     }
 
     @Override
-    public Response<?> getAllUserEvents(Pageable pageable) {
+    public Response<?> getAllUserEvents(UserAccount userAccount, Pageable pageable) {
         try {
-            UserAccount userAccount = loggedUser.getUser();
+
             if (userAccount == null){
                 return new Response<>(true, "Anonymous user, full authentication is required", ResponseCode.UNAUTHORIZED);
             }

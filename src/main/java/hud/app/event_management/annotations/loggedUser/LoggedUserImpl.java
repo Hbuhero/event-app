@@ -1,9 +1,9 @@
-package hud.app.event_management.utils.userExtractor;
+package hud.app.event_management.annotations.loggedUser;
 import java.io.Serializable;
-import java.lang.annotation.Annotation;
 import java.util.HashMap;
 
 import hud.app.event_management.model.UserAccount;
+import hud.app.event_management.dto.response.UserInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,7 +21,7 @@ import hud.app.event_management.repository.UserAccountRepository;
 
 @Slf4j
 @Service
-public class LoggedUserImpl implements LoggedUser, Serializable {
+public class LoggedUserImpl implements Serializable {
 
     @Autowired
     private UserAccountRepository repository;
@@ -38,7 +38,7 @@ public class LoggedUserImpl implements LoggedUser, Serializable {
                 .registerModule(new JavaTimeModule());
     }
 
-    @Override
+
     public UserInfo getInfo() {
         // get current authentication object from SecurityContextHolder
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
@@ -86,7 +86,7 @@ public class LoggedUserImpl implements LoggedUser, Serializable {
         return null;
     }
 
-    @Override
+
     public UserAccount getUser() {
         UserInfo userInfo = getInfo();
         if (userInfo != null && userInfo.getEmail() != null) {

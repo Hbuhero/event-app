@@ -5,6 +5,7 @@ import hud.app.event_management.model.UserAccount;
 import hud.app.event_management.service.AuthService;
 import hud.app.event_management.utils.Response;
 import hud.app.event_management.utils.ResponseCode;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -21,25 +22,25 @@ public class AuthController {
 
     @PostMapping("register")
     @PreAuthorize("permitAll()")
-    private Response<String> register(@RequestBody UserAccountRequest userAccountDto){
+    private Response<String> register(@Valid @RequestBody UserAccountRegistrationRequest userAccountDto){
         return authService.register(userAccountDto);
     }
 
     @PostMapping("login")
     @PreAuthorize("permitAll()")
-    private Response<?> login(@RequestBody LoginRequest loginRequest){
+    private Response<?> login(@Valid @RequestBody LoginRequest loginRequest){
         return authService.login(loginRequest);
     }
 
     @PostMapping("validate-otp")
     @PreAuthorize("permitAll()")
-    private Response<String> validateOTP(@RequestBody OTPRequest otpRequest){
-        return authService.validateOTP(otpRequest);
+    private Response<String> validateOTP(@Valid @RequestBody OTPVerificationRequest otpVerificationRequest){
+        return authService.validateOTP(otpVerificationRequest);
     }
 
     @PostMapping("activate-account")
     @PreAuthorize("permitAll()")
-    private Response<UserAccount> activateAccount(@RequestBody ActivationRequest activationRequest){
+    private Response<UserAccount> activateAccount(@Valid @RequestBody ActivationRequest activationRequest){
         return authService.activateAccount(activationRequest);
     }
 
@@ -51,9 +52,9 @@ public class AuthController {
 
     @PostMapping("reset-password")
     @PreAuthorize("permitAll()")
-    private Response<String> resetPassword(@RequestBody PasswordRequest passwordRequestDto){
+    private Response<String> resetPassword(@Valid @RequestBody PasswordResetRequest passwordResetRequestDto){
         try {
-            return authService.resetPassword(passwordRequestDto);
+            return authService.resetPassword(passwordResetRequestDto);
         } catch (Exception e) {
             return new Response<>(true, "Failed to reset password with cause: "+e.getMessage(), ResponseCode.FAIL);
         }
@@ -64,4 +65,6 @@ public class AuthController {
     private Response<String> resendOTP(@RequestParam String username){
         return authService.resendOTP(username);
     }
+
+    // TODO: disable user account api for super admin
 }
