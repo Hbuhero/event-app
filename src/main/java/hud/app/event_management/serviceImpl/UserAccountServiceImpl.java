@@ -1,12 +1,11 @@
 package hud.app.event_management.serviceImpl;
 
-import hud.app.event_management.dto.request.UserAccountRegistrationRequest;
 import hud.app.event_management.dto.request.UserAccountUpdateRequest;
 import hud.app.event_management.model.UserAccount;
 import hud.app.event_management.repository.UserAccountRepository;
 import hud.app.event_management.service.UserAccountService;
-import hud.app.event_management.utils.Response;
-import hud.app.event_management.utils.ResponseCode;
+import hud.app.event_management.utils.responseUtils.Response;
+import hud.app.event_management.utils.responseUtils.ResponseCode;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;

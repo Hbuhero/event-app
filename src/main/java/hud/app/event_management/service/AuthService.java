@@ -3,7 +3,7 @@ package hud.app.event_management.service;
 import hud.app.event_management.dto.request.*;
 import hud.app.event_management.dto.response.LoginResponseDto;
 import hud.app.event_management.model.UserAccount;
-import hud.app.event_management.utils.Response;
+import hud.app.event_management.utils.responseUtils.Response;
 
 public interface AuthService {
     Response<String> register(UserAccountRegistrationRequest userAccountDto);

@@ -3,7 +3,7 @@ package hud.app.event_management.controller;
 import hud.app.event_management.dto.response.EventResponseDto;
 import hud.app.event_management.dto.response.EventTypeResponseDto;
 import hud.app.event_management.service.EventTypeService;
-import hud.app.event_management.utils.Response;
+import hud.app.event_management.utils.responseUtils.Response;
 import hud.app.event_management.utils.paginationUtils.PageableConfig;
 import hud.app.event_management.utils.paginationUtils.PageableParam;
 import org.springframework.beans.factory.annotation.Autowired;

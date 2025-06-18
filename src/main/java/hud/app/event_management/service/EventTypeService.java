@@ -2,9 +2,7 @@ package hud.app.event_management.service;
 
 import hud.app.event_management.dto.response.EventResponseDto;
 import hud.app.event_management.dto.response.EventTypeResponseDto;
-import hud.app.event_management.model.Event;
-import hud.app.event_management.model.EventType;
-import hud.app.event_management.utils.Response;
+import hud.app.event_management.utils.responseUtils.Response;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 

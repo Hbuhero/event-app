@@ -5,7 +5,7 @@ import hud.app.event_management.dto.response.ClubResponseDto;
 import hud.app.event_management.dto.response.UserAccountResponseDto;
 import hud.app.event_management.model.UserAccount;
 import hud.app.event_management.service.ClubSubscriptionService;
-import hud.app.event_management.utils.Response;
+import hud.app.event_management.utils.responseUtils.Response;
 import hud.app.event_management.utils.paginationUtils.PageableConfig;
 import hud.app.event_management.utils.paginationUtils.PageableParam;
 import org.springframework.beans.factory.annotation.Autowired;

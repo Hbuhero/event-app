@@ -2,12 +2,11 @@ package hud.app.event_management.controller;
 
 import hud.app.event_management.annotations.loggedUser.LoggedUser;
 import hud.app.event_management.dto.request.PasswordResetRequest;
-import hud.app.event_management.dto.request.UserAccountRegistrationRequest;
 import hud.app.event_management.dto.request.UserAccountUpdateRequest;
 import hud.app.event_management.model.UserAccount;
 import hud.app.event_management.service.AuthService;
 import hud.app.event_management.service.UserAccountService;
-import hud.app.event_management.utils.Response;
+import hud.app.event_management.utils.responseUtils.Response;
 import hud.app.event_management.utils.paginationUtils.PageableConfig;
 import hud.app.event_management.utils.paginationUtils.PageableParam;
 import jakarta.validation.Valid;
@@ -16,6 +15,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 @RequestMapping("api/v1/user/")
@@ -48,7 +48,7 @@ public class UserAccountController {
     // edit profile
     @PostMapping("/create-update")
     @PreAuthorize("hasRole('USER')")
-    private Response<UserAccount> createUpdateUserAccount(@LoggedUser UserAccount userAccount, @Valid @RequestBody UserAccountUpdateRequest userAccountDto){
+    private Response<UserAccount> updateUserAccount(@LoggedUser UserAccount userAccount, @Valid @RequestBody UserAccountUpdateRequest userAccountDto){
         return userAccountService.updateUserAccount(userAccount, userAccountDto);
     }
 
@@ -70,5 +70,10 @@ public class UserAccountController {
         return passwordResetRequest;
     }
 
+
+    @PostMapping("/change-profile-picture")
+    private Response<?> changeProfilePic(MultipartFile file){
+        return
+    }
 
 }

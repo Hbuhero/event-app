@@ -1,4 +1,4 @@
-package hud.app.event_management.utils;
+package hud.app.event_management.utils.responseUtils;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

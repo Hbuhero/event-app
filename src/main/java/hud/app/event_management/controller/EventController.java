@@ -5,7 +5,7 @@ import hud.app.event_management.dto.request.EventRequest;
 import hud.app.event_management.dto.response.EventResponseDto;
 import hud.app.event_management.model.UserAccount;
 import hud.app.event_management.service.EventService;
-import hud.app.event_management.utils.Response;
+import hud.app.event_management.utils.responseUtils.Response;
 import hud.app.event_management.utils.paginationUtils.PageableConfig;
 import hud.app.event_management.utils.paginationUtils.PageableParam;
 import jakarta.validation.Valid;

@@ -1,4 +1,4 @@
-package hud.app.event_management.utils;
+package hud.app.event_management.utils.responseUtils;
 
 public class ResponseCode {
     public static final int SUCCESS = 7000;
