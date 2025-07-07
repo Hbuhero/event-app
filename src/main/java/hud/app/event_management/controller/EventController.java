@@ -9,10 +9,13 @@ import hud.app.event_management.utils.responseUtils.Response;
 import hud.app.event_management.utils.paginationUtils.PageableConfig;
 import hud.app.event_management.utils.paginationUtils.PageableParam;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotBlank;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.MediaType;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 @RequestMapping("api/v1/event")
@@ -42,9 +45,9 @@ public class EventController {
     }
 
     // create event update event
-    @PostMapping("create-update")
+    @PostMapping(path = "create-update")
     @PreAuthorize("isAuthenticated()")
-    private Response<EventResponseDto> createUpdateEvent(@LoggedUser UserAccount userAccount, @Valid @RequestBody EventRequest eventDto){
+    private Response<EventResponseDto> createUpdateEvent(@LoggedUser UserAccount userAccount, @Valid EventRequest eventDto){
         return eventService.createUpdateEvent(userAccount, eventDto);
     }
 
@@ -55,9 +58,10 @@ public class EventController {
         return eventService.deleteEventByUuid(uuid);
     }
 
-    @GetMapping
+    @GetMapping("/name")
     @PreAuthorize("permitAll()")
-    private Response<EventResponseDto> getEventByName(@RequestParam("name") String name){
+    private Response<?> getEventByName(@RequestParam("name") String name){
+        System.out.println(name);
         return eventService.getEventByName(name);
     }
 

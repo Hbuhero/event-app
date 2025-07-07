@@ -2,6 +2,8 @@ package hud.app.event_management.serviceImpl;
 
 import hud.app.event_management.dto.request.*;
 import hud.app.event_management.dto.response.LoginResponseDto;
+import hud.app.event_management.exceptions.ResourceAlreadyExistException;
+import hud.app.event_management.exceptions.ResourceNotFoundException;
 import hud.app.event_management.security.jwt.JwtService;
 import hud.app.event_management.model.UserAccount;
 import hud.app.event_management.repository.UserAccountRepository;
@@ -43,18 +45,12 @@ public class AuthServiceImpl implements AuthService {
     }
     @Override
     public Response<String> register(UserAccountRegistrationRequest userAccountDto) {
-        try {
-            // todo: validate null values
+
             Optional<UserAccount> optionalUserAccount = userAccountRepository.findFirstByUsernameOrPhone(userAccountDto.getEmail(), userAccountDto.getPhone());
-            // todo: validate email
+
             if(optionalUserAccount.isPresent()){
-                return new Response<>(true, "Email or phone number already exists", ResponseCode.DUPLICATE_EMAIL);
+                throw new ResourceAlreadyExistException("Username already exist");
             }
-            // todo: validate phone number
-//            Optional<UserAccount> accountOptional = userAccountRepository.findFirstByPhone(userAccountDto.getPhone());
-//            if (accountOptional.isPresent()){
-//                return new Response<>(true, "Phone number already exists", ResponseCode.DUPLICATE);
-//            }
 
             UserAccount userAccount = UserAccount.builder()
                     .firstName(userAccountDto.getFirstname())
@@ -64,7 +60,6 @@ public class AuthServiceImpl implements AuthService {
                     .phone(userAccountDto.getPhone())
                     .password(passwordEncoder.encode(userAccountDto.getPassword()))
                     .address(userAccountDto.getAddress())
-                    .profilePhoto(userAccountDto.getProfilePhoto())
                     .userType("USER")
                     .enabled(false)
                     .build();
@@ -73,22 +68,20 @@ public class AuthServiceImpl implements AuthService {
             int nextInt = random.nextInt(100001, 999999);
 
             userAccount.setOneTimePassword(String.valueOf(nextInt));
+
             // todo: implement email sender
+
             userAccount.setLastOtpSentAt(LocalDateTime.now());
 
             userAccountRepository.save(userAccount);
 
             return new Response<>(false, "Registration successful: ", ResponseCode.SUCCESS, String.valueOf(nextInt));
 
-        } catch (Exception e) {
-            return new Response<>(true, "Registration failed with cause: "+ e.getMessage(), ResponseCode.FAIL);
-        }
 
     }
 
     @Override
     public Response<LoginResponseDto> login(LoginRequest loginRequest) {
-        try {
 
             Authentication authentication = authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(loginRequest.getUsername(), loginRequest.getPassword())
@@ -98,29 +91,23 @@ public class AuthServiceImpl implements AuthService {
             // todo: generate jwt and refresh token
 
             Optional<UserAccount> optionalUserAccount = userAccountRepository.findFirstByUsername(loginRequest.getUsername());
+
             if (optionalUserAccount.isEmpty()){
                 return new Response<>(true, "Login failed", ResponseCode.FAIL);
             }
+
             UserAccount userAccount = optionalUserAccount.get();
             String jwt = jwtService.generateToken(UserDetailsImpl.build(userAccount));
 
             return new Response<>(false, "Login successful", ResponseCode.SUCCESS, new LoginResponseDto(jwt, userAccount.getUsername(), userAccount.getUserType()));
-        } catch (Exception e) {
-            return new Response<>(true, "Failed to login with cause: "+e.getMessage(), ResponseCode.FAIL);
-        }
+
     }
 
     @Override
     public Response<String> validateOTP(OTPVerificationRequest otpVerificationRequest) {
-        try {
-            // todo: validate null values
-            if (otpVerificationRequest.getOtp().isBlank() || otpVerificationRequest.getUsername().isBlank()){
-                return new Response<>(true, "Username or OTP must not be empty", ResponseCode.NULL_ARGUMENT);
-            }
-
             Optional<UserAccount> optionalUserAccount = userAccountRepository.findFirstByUsername(otpVerificationRequest.getUsername());
             if (optionalUserAccount.isEmpty()){
-                return new Response<>(true, "User not found", ResponseCode.USER_NOT_FOUND);
+                throw new ResourceNotFoundException("User not found");
             }
 
             UserAccount userAccount = optionalUserAccount.get();
@@ -131,7 +118,7 @@ public class AuthServiceImpl implements AuthService {
             // is the otp expired
             Duration difference = Duration.between(userAccount.getLastOtpSentAt(), LocalDateTime.now());
             if (difference.getSeconds() >= duration){
-                return new Response<>(true, "OTP is has expired, request new OTP", ResponseCode.FAIL);
+                return new Response<>(true, "OTP has expired, request new OTP", ResponseCode.FAIL);
             }
             // is the otp valid
             if (!otpVerificationRequest.getOtp().equals(userAccount.getOneTimePassword())){
@@ -141,18 +128,16 @@ public class AuthServiceImpl implements AuthService {
             userAccount.setOtpVerified(true);
             userAccountRepository.save(userAccount);
             return new Response<>(false, "OTP validation successful", ResponseCode.SUCCESS);
-        } catch (Exception e) {
-            return new Response<>(true, "Failed to validate OTP with cause: "+e.getMessage(), ResponseCode.FAIL);
-        }
+
     }
 
     @Override
     public Response<String> forgetPassword(String username) {
-        try{
+
             // find user
             Optional<UserAccount> optionalUserAccount = userAccountRepository.findFirstByUsername(username);
             if (optionalUserAccount.isEmpty()){
-                return new Response<>(true, "User not found", ResponseCode.USER_NOT_FOUND);
+                throw new ResourceNotFoundException("User not found");
             }
 
             UserAccount userAccount = optionalUserAccount.get();
@@ -162,30 +147,26 @@ public class AuthServiceImpl implements AuthService {
 
             userAccount.setOneTimePassword(String.valueOf(nextInt));
             userAccount.setOtpVerified(false);
+
             // todo: send email with otp
+
             userAccount.setLastOtpSentAt(LocalDateTime.now());
 
             userAccountRepository.save(userAccount);
 
             return new Response<>(false, "Forget password initiated successfully: ", ResponseCode.SUCCESS, String.valueOf(nextInt));
-        } catch (Exception e) {
-            return new Response<>(true, "Failed to initiate forget password with cause: "+e.getMessage(), ResponseCode.FAIL);
-        }
+
     }
 
     @Override
     public Response<String> resetPassword(PasswordResetRequest passwordResetRequestDto) {
         try {
-            if (passwordResetRequestDto.getPassword().isBlank() || passwordResetRequestDto.getUsername().isBlank()){
-                return new Response<>(true, "Username and password must not be null", ResponseCode.NULL_ARGUMENT);
-            }
 
-            // todo: validate email
 
             Optional<UserAccount> optionalUserAccount = userAccountRepository.findFirstByUsername(passwordResetRequestDto.getUsername());
 
             if (optionalUserAccount.isEmpty()){
-                return new Response<>(true, "User not found", ResponseCode.USER_NOT_FOUND);
+                throw new ResourceNotFoundException("User not found");
             }
 
             UserAccount userAccount = optionalUserAccount.get();
@@ -205,13 +186,10 @@ public class AuthServiceImpl implements AuthService {
     @Override
     public Response<UserAccount> activateAccount(ActivationRequest activationRequest) {
         try{
-            if (activationRequest.getUsername().isBlank() || activationRequest.getOtp().isBlank()){
-                return new Response<>(true, "Username and OTP cant not be null", ResponseCode.FAIL);
-            }
 
             Optional<UserAccount> optionalUserAccount = userAccountRepository.findFirstByUsername(activationRequest.getUsername());
             if (optionalUserAccount.isEmpty()){
-                return new Response<>(true, "User not found", ResponseCode.FAIL);
+                throw new ResourceNotFoundException("User not found");
             }
             UserAccount userAccount = optionalUserAccount.get();
 
@@ -248,7 +226,7 @@ public class AuthServiceImpl implements AuthService {
 
             Optional<UserAccount> optionalUserAccount = userAccountRepository.findFirstByUsername(username);
             if (optionalUserAccount.isEmpty()){
-                return new Response<>(true, "User not found", ResponseCode.FAIL);
+                throw new ResourceNotFoundException("User not found");
             }
             UserAccount userAccount = optionalUserAccount.get();
 
@@ -265,7 +243,9 @@ public class AuthServiceImpl implements AuthService {
             int nextInt = random.nextInt(100001, 999999);
 
             userAccount.setOneTimePassword(String.valueOf(nextInt));
+
             // todo: send email with otp
+
             userAccount.setLastOtpSentAt(LocalDateTime.now());
             userAccountRepository.save(userAccount);
 
@@ -278,10 +258,6 @@ public class AuthServiceImpl implements AuthService {
     @Override
     public Response<UserAccount> getLoggedUser(UserAccount userAccount) {
         try {
-            if (userAccount == null){
-                return new Response<>(true, "Unauthorized anonymous user", ResponseCode.UNAUTHORIZED);
-            }
-
             return new Response<>(false, ResponseCode.SUCCESS, userAccount);
         } catch (Exception e) {
             return new Response<>(true, "Operation unsuccessful", ResponseCode.FAIL);
@@ -292,4 +268,3 @@ public class AuthServiceImpl implements AuthService {
     // todo: logout endpoint
 }
 
-// resend, validate, activate

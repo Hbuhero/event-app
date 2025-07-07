@@ -3,12 +3,11 @@ package hud.app.event_management.serviceImpl;
 import hud.app.event_management.dto.request.CategoryRequest;
 import hud.app.event_management.dto.response.CategoryResponseDto;
 import hud.app.event_management.mappers.CategoryMapper;
-import hud.app.event_management.model.Category;
-import hud.app.event_management.model.UserAccount;
-import hud.app.event_management.model.UserSubscribedCategory;
+import hud.app.event_management.model.*;
 import hud.app.event_management.repository.CategoryRepository;
 import hud.app.event_management.repository.UserSubscribedCategoryRepository;
 import hud.app.event_management.service.CategoryService;
+import hud.app.event_management.utils.FileUtil;
 import hud.app.event_management.utils.responseUtils.Response;
 import hud.app.event_management.utils.responseUtils.ResponseCode;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,14 +21,15 @@ import java.util.Optional;
 public class CategoryServiceImpl implements CategoryService {
     private final CategoryRepository categoryRepository;
     private final CategoryMapper categoryMapper;
-
+    private final FileUtil fileUtil;
     private final UserSubscribedCategoryRepository userSubscribedCategoryRepository;
 
     @Autowired
     public CategoryServiceImpl(CategoryRepository categoryRepository,
-                               CategoryMapper categoryMapper, UserSubscribedCategoryRepository userSubscribedCategoryRepository) {
+                               CategoryMapper categoryMapper, FileUtil fileUtil, UserSubscribedCategoryRepository userSubscribedCategoryRepository) {
         this.categoryRepository = categoryRepository;
         this.categoryMapper = categoryMapper;
+        this.fileUtil = fileUtil;
         this.userSubscribedCategoryRepository = userSubscribedCategoryRepository;
     }
 
@@ -57,7 +57,7 @@ public class CategoryServiceImpl implements CategoryService {
             }
 
             Category category = optionalCategory.get();
-
+            System.out.println(category.getCategorySvg());
             CategoryResponseDto responseDto = categoryMapper.toDto(category);
 
             return new Response<>(false, ResponseCode.SUCCESS, responseDto);
@@ -73,25 +73,27 @@ public class CategoryServiceImpl implements CategoryService {
 
             Category category;
             if (optionalCategory.isEmpty()){
-                category = categoryRepository.save(
-                        Category
-                                .builder()
-                                .name(categoryRequest.getName())
-                                .categoryImage(categoryRequest.getCategoryImage())
-                                .categorySvg(categoryRequest.getCategorySvg())
-                                .description(categoryRequest.getDescription())
-                                .build()
-                );
-
+                category = Category
+                        .builder()
+                        .name(categoryRequest.getName())
+                        .categorySvg(categoryRequest.getCategorySvg())
+                        .categoryImage(categoryRequest.getCategoryImage())
+                        .description(categoryRequest.getDescription())
+                        .build();
             } else {
                 category = optionalCategory.get();
 
-               category.setCategoryImage(categoryRequest.getCategoryImage());
+                Optional<FileUpload> optionalFileUpload = fileUtil.findByPath(optionalCategory.get().getCategoryImage());
+
+                optionalFileUpload.ifPresent(fileUtil::setFileStatusIsDeleted);
+
+               category.setCategoryImage(category.getCategoryImage());
                category.setCategorySvg(categoryRequest.getCategorySvg());
                category.setDescription(categoryRequest.getDescription());
                category.setName(categoryRequest.getName());
 
             }
+            categoryRepository.save(category);
             return new Response<>(false, 7000, categoryMapper.toDto(category));
         } catch (Exception e) {
             return new Response<>(true, "Failed to create/update category by uuid with cause: \n"+e.getMessage(), ResponseCode.FAIL);
@@ -110,6 +112,10 @@ public class CategoryServiceImpl implements CategoryService {
             if (optionalCategory.isEmpty()){
                 return new Response<>(true, "No category found", ResponseCode.NO_RECORD_FOUND);
             }
+
+            Optional<FileUpload> optionalFileUpload = fileUtil.findByPath(optionalCategory.get().getCategoryImage());
+
+            optionalFileUpload.ifPresent(fileUtil::setFileStatusIsDeleted);
 
             categoryRepository.delete(optionalCategory.get());
             return new Response<>(false, ResponseCode.SUCCESS, "Category deleted successfully");

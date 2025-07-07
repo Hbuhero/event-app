@@ -4,9 +4,11 @@ import hud.app.event_management.annotations.ValidEmail;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import lombok.Data;
 import lombok.Getter;
 
-@Getter
+
+@Data
 public class ActivationRequest {
 
     @ValidEmail

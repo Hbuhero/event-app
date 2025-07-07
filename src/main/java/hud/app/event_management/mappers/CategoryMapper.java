@@ -12,6 +12,7 @@ import java.util.List;
 public interface CategoryMapper {
 
     @Mapping(source = "events", target = "eventCount")
+    @Mapping(source = "categorySvg", target = "svg")
     CategoryResponseDto toDto(Category category);
 
     default long mapEventCount(List<Event> events) {

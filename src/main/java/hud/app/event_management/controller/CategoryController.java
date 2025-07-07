@@ -41,7 +41,7 @@ public class CategoryController {
 
     @PostMapping("/create-update")
     @PreAuthorize("hasRole('SUPER_ADMIN')")
-    private Response<CategoryResponseDto> createUpdateCategory(@Valid @RequestBody CategoryRequest categoryRequest){
+    private Response<CategoryResponseDto> createUpdateCategory(@Valid @ModelAttribute CategoryRequest categoryRequest){
         return categoryService.createUpdateCategory(categoryRequest);
     }
 

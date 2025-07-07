@@ -1,9 +1,8 @@
 package hud.app.event_management.dto.request;
 
 import hud.app.event_management.annotations.ValidEmail;
-import hud.app.event_management.annotations.loggedUser.ValidPassword;
+import hud.app.event_management.annotations.ValidPassword;
 import lombok.Data;
-import lombok.Getter;
 
 @Data
 @ValidPassword

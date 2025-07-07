@@ -2,6 +2,7 @@ package hud.app.event_management.annotations.loggedUser;
 import java.io.Serializable;
 import java.util.HashMap;
 
+import hud.app.event_management.exceptions.UnauthenticatedAccessException;
 import hud.app.event_management.model.UserAccount;
 import hud.app.event_management.dto.response.UserInfo;
 import org.slf4j.Logger;
@@ -92,7 +93,7 @@ public class LoggedUserImpl implements Serializable {
         if (userInfo != null && userInfo.getEmail() != null) {
             return repository.findFirstByUsername(userInfo.getEmail()).orElse(null);
         }
-        return null;
+        throw new UnauthenticatedAccessException("Anonymous user, full authentication is required");
     }
 
 

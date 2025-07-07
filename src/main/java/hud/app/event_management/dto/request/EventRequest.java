@@ -4,13 +4,15 @@ package hud.app.event_management.dto.request;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import lombok.Data;
 import lombok.Getter;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 
-@Getter
+@Data
 public class EventRequest {
 
     @NotBlank
@@ -29,10 +31,11 @@ public class EventRequest {
     private String category;
     @NotBlank
     private String url;
-    private String picUrl;
-    @NotBlank
+    @NotNull
+    private String eventPic;
+    @NotNull
     private LocalDate startDate;
-    @NotBlank
+    @NotNull
     private LocalTime startTime;
 
 }

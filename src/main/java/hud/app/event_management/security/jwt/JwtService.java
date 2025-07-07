@@ -6,6 +6,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
 
+import hud.app.event_management.configurations.ApplicationConfigurations;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
@@ -18,7 +19,11 @@ import io.jsonwebtoken.security.Keys;
 @Service
 public class JwtService {
 
-    private static final String SECRET_KEY = "2AB3B34D6A010949DE6630265FD1601FBD32015263E7816D661AF9319051274E";
+    private final ApplicationConfigurations applicationConfigurations;
+
+    public JwtService(ApplicationConfigurations applicationConfigurations) {
+        this.applicationConfigurations = applicationConfigurations;
+    }
 
     public String extractUsername(String jwt) {
         return extractClaim(jwt, Claims::getSubject);
@@ -66,7 +71,7 @@ public class JwtService {
     }
 
     private Key getSigningKey() {
-        byte[] keyBytes = Decoders.BASE64.decode(SECRET_KEY);
+        byte[] keyBytes = Decoders.BASE64.decode(applicationConfigurations.getJwtKey());
         return Keys.hmacShaKeyFor(keyBytes);
     }
 

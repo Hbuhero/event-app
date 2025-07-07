@@ -1,16 +1,8 @@
 package hud.app.event_management.annotations;
 
-import com.fasterxml.jackson.databind.util.BeanUtil;
-import hud.app.event_management.annotations.loggedUser.ValidPassword;
 import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;
-import org.springframework.beans.BeanUtils;
-import org.springframework.beans.BeanWrapper;
-import org.springframework.beans.BeanWrapperImpl;
-import org.springframework.beans.factory.BeanFactoryUtils;
 
-import java.beans.PropertyDescriptor;
-import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 
 public class PasswordValidator implements ConstraintValidator<ValidPassword, Object> {

@@ -11,6 +11,7 @@ import hud.app.event_management.utils.paginationUtils.PageableConfig;
 import hud.app.event_management.utils.paginationUtils.PageableParam;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.Resource;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -65,15 +66,5 @@ public class UserAccountController {
         return authService.getLoggedUser(userAccount);
     }
 
-    @PostMapping("ok")
-    private PasswordResetRequest test(@Valid @RequestBody PasswordResetRequest passwordResetRequest){
-        return passwordResetRequest;
-    }
-
-
-    @PostMapping("/change-profile-picture")
-    private Response<?> changeProfilePic(MultipartFile file){
-        return
-    }
 
 }

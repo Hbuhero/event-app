@@ -1,6 +1,5 @@
-package hud.app.event_management.annotations.loggedUser;
+package hud.app.event_management.annotations;
 
-import hud.app.event_management.annotations.PasswordValidator;
 import jakarta.validation.Constraint;
 import jakarta.validation.Payload;
 

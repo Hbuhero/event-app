@@ -1,6 +1,7 @@
 package hud.app.event_management.annotations;
 
 import jakarta.validation.Constraint;
+import jakarta.validation.Payload;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
@@ -17,4 +18,7 @@ import java.lang.annotation.Target;
 @Constraint(validatedBy = {})
 public @interface ValidPhoneNumber {
     String message() default "Please enter valid phone number eg. 255678900269";
+    Class<?>[] groups() default {};
+
+    Class<? extends Payload>[] payload() default {};
 }

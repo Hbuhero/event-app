@@ -2,12 +2,9 @@ package hud.app.event_management.dto.request;
 
 import hud.app.event_management.annotations.ValidEmail;
 import hud.app.event_management.annotations.ValidPhoneNumber;
-import hud.app.event_management.annotations.loggedUser.ValidPassword;
-import jakarta.validation.constraints.Email;
+import hud.app.event_management.annotations.ValidPassword;
 import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
-import lombok.Getter;
-import lombok.Setter;
 
 @Data
 @ValidPassword
@@ -25,6 +22,5 @@ public class UserAccountRegistrationRequest {
     private String address;
     private String password;
     private String confirmPassword;
-    // TODO: file service
-    private String profilePhoto;
+
 }

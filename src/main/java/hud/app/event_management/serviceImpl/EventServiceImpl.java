@@ -2,12 +2,14 @@ package hud.app.event_management.serviceImpl;
 
 import hud.app.event_management.dto.request.EventRequest;
 import hud.app.event_management.dto.response.EventResponseDto;
+import hud.app.event_management.exceptions.ResourceNotFoundException;
 import hud.app.event_management.mappers.EventMapper;
 import hud.app.event_management.model.*;
 import hud.app.event_management.repository.CategoryRepository;
 import hud.app.event_management.repository.EventRepository;
 import hud.app.event_management.repository.EventTypeRepository;
 import hud.app.event_management.service.EventService;
+import hud.app.event_management.utils.FileUtil;
 import hud.app.event_management.utils.responseUtils.Response;
 import hud.app.event_management.utils.responseUtils.ResponseCode;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,40 +28,38 @@ public class EventServiceImpl implements EventService {
     private final EventMapper eventMapper;
     private final CategoryRepository categoryRepository;
     private final EventTypeRepository eventTypeRepository;
+    private final FileUtil fileUtil;
 
 
     @Autowired
-    public EventServiceImpl(EventRepository eventRepository, EventMapper eventMapper, CategoryRepository categoryRepository, EventTypeRepository eventTypeRepository) {
+    public EventServiceImpl(EventRepository eventRepository, EventMapper eventMapper, CategoryRepository categoryRepository, EventTypeRepository eventTypeRepository, FileUtil fileUtil) {
         this.eventRepository = eventRepository;
         this.eventMapper = eventMapper;
         this.categoryRepository = categoryRepository;
         this.eventTypeRepository = eventTypeRepository;
+        this.fileUtil = fileUtil;
     }
 
     @Override
     public Response<EventResponseDto> getEventByName(String name) {
-        try {
+
             if (name == null){
                 return new Response<>(true, "Argument should not be null", ResponseCode.NULL_ARGUMENT);
             }
 
-            Optional<Event> optionalEvent = eventRepository.findFirstByTitle(name);
-            if (optionalEvent.isEmpty()){
-                return new Response<>(true, "Event not found", ResponseCode.NO_RECORD_FOUND);
-            }
+        System.out.println("inside service "+ name);
 
-            EventResponseDto eventResponseDto = eventMapper.eventToDto(optionalEvent.get());
+            Event event = eventRepository.findFirstByTitle(name).orElseThrow(() -> new ResourceNotFoundException("Event not found"));
+
+        System.out.println("after finding event");
+            EventResponseDto eventResponseDto = eventMapper.eventToDto(event);
 
             return new Response<>(false, ResponseCode.SUCCESS, eventResponseDto);
-        } catch (Exception e) {
-            return new Response<>(true, "Failed to get all events with cause: \n"+e.getMessage(), ResponseCode.FAIL);
-        }
     }
 
     @Override
     public Response<EventResponseDto> createUpdateEvent(UserAccount userAccount, EventRequest eventDto) {
         try {
-            // todo: handle input validation
 
             Optional<EventType> optionalEventType = eventTypeRepository.findByType(eventDto.getType());
 
@@ -88,8 +88,7 @@ public class EventServiceImpl implements EventService {
                                 .category(optionalCategory.get())
                                 .status(EventStatus.UPCOMING)
                                 .url(eventDto.getUrl())
-                                .picUrl(eventDto.getPicUrl())
-                                // starting date and ending
+                                .picUrl(eventDto.getEventPic())
                                 .startingDate(eventDto.getStartDate())
                                 .startingTime(eventDto.getStartTime())
                                 .build()
@@ -107,6 +106,10 @@ public class EventServiceImpl implements EventService {
                 }
 
                 Event event = optionalEvent.get();
+
+                Optional<FileUpload> optionalFileUpload = fileUtil.findByPath(event.getPicUrl());
+                optionalFileUpload.ifPresent(fileUtil::setFileStatusIsDeleted);
+
                 event.setTitle(eventDto.getTitle());
                 event.setHostedBy(eventDto.getHostedBy());
                 event.setHostUrl(eventDto.getHostUrl());
@@ -117,7 +120,7 @@ public class EventServiceImpl implements EventService {
                 event.setType(optionalEventType.get());
                 event.setCategory(optionalCategory.get());
                 event.setUrl(eventDto.getUrl());
-                event.setPicUrl(eventDto.getPicUrl());
+                event.setPicUrl(eventDto.getEventPic());
 
                 EventResponseDto  responseDto = eventMapper.eventToDto(eventRepository.save(event));
                 return new Response<>(false, "Successfully updated event", ResponseCode.SUCCESS, responseDto);
@@ -141,6 +144,9 @@ public class EventServiceImpl implements EventService {
             }
 
             Event event = optionalEvent.get();
+
+            Optional<FileUpload> optionalFileUpload = fileUtil.findByPath(event.getPicUrl());
+            optionalFileUpload.ifPresent(fileUtil::setFileStatusIsDeleted);
 
             eventRepository.deleteById(event.getId());
 
