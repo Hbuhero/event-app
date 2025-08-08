@@ -31,4 +31,6 @@ public class UserSubscribedCategory extends BaseEntity implements Serializable {
     @ManyToOne
     @JoinColumn(name = "category")
     private Category category;
+
+    private Boolean notify = userAccount.getNotify();
 }

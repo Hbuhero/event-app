@@ -25,7 +25,7 @@ public class FileUpload extends BaseEntity implements Serializable {
     @Column(name = "server_path", nullable = false)
     private String serverPath;
 
-    @Column(name = "file_namee", nullable = false)
+    @Column(name = "file_name", nullable = false)
     private String fileName;
 
     @Enumerated(EnumType.STRING)

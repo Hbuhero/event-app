@@ -19,6 +19,5 @@ public class UserAccountUpdateRequest {
     private String phone;
     @NotBlank
     private String address;
-    //TODO: handle file service
-    private String profilePhoto;
+
 }

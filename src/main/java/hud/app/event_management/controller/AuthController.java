@@ -5,6 +5,7 @@ import hud.app.event_management.model.UserAccount;
 import hud.app.event_management.service.AuthService;
 import hud.app.event_management.utils.responseUtils.Response;
 import hud.app.event_management.utils.responseUtils.ResponseCode;
+import jakarta.mail.MessagingException;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -22,7 +23,7 @@ public class AuthController {
 
     @PostMapping("register")
     @PreAuthorize("permitAll()")
-    private Response<String> register(@Valid @RequestBody UserAccountRegistrationRequest userAccountDto){
+    private Response<String> register(@Valid @RequestBody UserAccountRegistrationRequest userAccountDto) throws MessagingException {
         return authService.register(userAccountDto);
     }
 
@@ -46,7 +47,7 @@ public class AuthController {
 
     @PostMapping("forget-password")
     @PreAuthorize("permitAll()")
-    private Response<String> forgetPassword(@RequestParam String username){
+    private Response<String> forgetPassword(@RequestParam String username) throws MessagingException {
         return authService.forgetPassword(username);
     }
 
@@ -62,8 +63,8 @@ public class AuthController {
 
     @PostMapping("resend-otp")
     @PreAuthorize("permitAll()")
-    private Response<String> resendOTP(@RequestParam String username){
-        return authService.resendOTP(username);
+    private Response<String> resendOTP(@RequestParam String username, @RequestParam String action){
+        return authService.resendOTP(username, action);
     }
 
     // TODO: disable user account api for super admin

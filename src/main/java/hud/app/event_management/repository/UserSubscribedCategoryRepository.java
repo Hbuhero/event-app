@@ -9,6 +9,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.Optional;
 
 @Repository
@@ -19,4 +20,6 @@ public interface UserSubscribedCategoryRepository extends JpaRepository<UserSubs
     void deleteByUserAccountAndCategory(UserAccount userAccount, Category category);
 
     Optional<UserSubscribedCategory> findByUserAccountAndCategory(UserAccount userAccount, Category category);
+
+    List<UserSubscribedCategory> findAllByUserAccount(UserAccount userAccount);
 }

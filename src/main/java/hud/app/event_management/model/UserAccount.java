@@ -79,6 +79,10 @@ public class UserAccount extends BaseEntity implements Serializable {
 //
     @JsonIgnore
     private LocalDateTime lastOtpSentAt;
+
+    @JsonIgnore
+    private Boolean notify = true;
+
 //
 //    @JsonIgnore
 //    private LocalDateTime lastLoginAttempt;

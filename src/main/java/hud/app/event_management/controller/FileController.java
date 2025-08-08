@@ -26,17 +26,9 @@ import java.util.Optional;
 public class FileController {
 
     private final FileUtil fileUtil;
-    private final UserAccountRepository userAccountRepository;
 
     public FileController(FileUtil fileUtil, UserAccountRepository userAccountRepository) {
         this.fileUtil = fileUtil;
-        this.userAccountRepository = userAccountRepository;
-    }
-
-    @GetMapping("/try")
-    private UserAccount test() throws FileNotFoundException {
-//        return userAccountRepository.findById(1221L).orElseThrow(FileNotFoundException::new);
-        throw new FileNotFoundException("ok");
     }
 
     @GetMapping("{entityType}/{filename}")
@@ -49,7 +41,7 @@ public class FileController {
 
         EntityType type  = optionalType.get();
 
-        if (type.equals(EntityType.USERACCOUNT)){
+        if (type.equals(EntityType.USER_ACCOUNT)){
             if (userAccount == null){
                 return ResponseEntity.status(403).build();
             }
@@ -66,15 +58,16 @@ public class FileController {
 
     @PostMapping("upload/{entityType}")
     @PreAuthorize("isAuthenticated()")
-    private Response<String> upload(@PathVariable("entityType") String entityType, @RequestParam("file") MultipartFile file) throws IOException {
-        Optional<EntityType> optionalType = Arrays.stream(EntityType.values()).filter(e -> entityType.equalsIgnoreCase(e.toString())).findFirst();
+    private Response<String> upload(@PathVariable("entityType") String entityType, @RequestParam("file") MultipartFile file, @LoggedUser UserAccount userAccount) throws IOException {
 
-        if (optionalType.isEmpty()){
-            return new Response<>(true, "Entity type is not found", ResponseCode.NO_RECORD_FOUND);
-        }
-
-        EntityType type  = optionalType.get();
+        EntityType type = EntityType.valueOf(entityType);
         String path =  fileUtil.saveFile(type, file).getPath();
+
+        if(type.equals(EntityType.USER_ACCOUNT) && userAccount != null){
+
+            userAccount.setProfilePhoto(path);
+            return new Response<>(false, path, ResponseCode.SUCCESS);
+        }
 
         return new Response<>(false, path, ResponseCode.SUCCESS);
     }

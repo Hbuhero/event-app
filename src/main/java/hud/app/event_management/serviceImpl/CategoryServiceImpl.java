@@ -2,6 +2,8 @@ package hud.app.event_management.serviceImpl;
 
 import hud.app.event_management.dto.request.CategoryRequest;
 import hud.app.event_management.dto.response.CategoryResponseDto;
+import hud.app.event_management.exceptions.ResourceAlreadyExistException;
+import hud.app.event_management.exceptions.ResourceNotFoundException;
 import hud.app.event_management.mappers.CategoryMapper;
 import hud.app.event_management.model.*;
 import hud.app.event_management.repository.CategoryRepository;
@@ -35,35 +37,24 @@ public class CategoryServiceImpl implements CategoryService {
 
     @Override
     public Response<?> getAllCategories(Pageable pageable) {
-        try {
+
             Page<CategoryResponseDto> responseDto = categoryRepository.findAll(pageable).map(categoryMapper::toDto);
             return new Response<>(false, ResponseCode.SUCCESS, responseDto);
-        } catch (Exception e) {
-            return new Response<>(true, "Failed to get all categories with cause: \n"+e.getMessage(), ResponseCode.FAIL);
-        }
-
     }
 
     @Override
     public Response<CategoryResponseDto> getCategoryByUuid(String uuid) {
-        try {
-            if (uuid == null){
+
+            if (uuid.isBlank()){
                 return new Response<>(true, "Argument should not be null", ResponseCode.NULL_ARGUMENT);
             }
 
-            Optional<Category> optionalCategory = categoryRepository.findFirstByUuid(uuid);
-            if (optionalCategory.isEmpty()){
-                return new Response<>(true, "No category found", ResponseCode.NO_RECORD_FOUND);
-            }
+            Category category = categoryRepository.findFirstByUuid(uuid).orElseThrow(() -> new ResourceNotFoundException("Category not found"));
 
-            Category category = optionalCategory.get();
-            System.out.println(category.getCategorySvg());
             CategoryResponseDto responseDto = categoryMapper.toDto(category);
 
             return new Response<>(false, ResponseCode.SUCCESS, responseDto);
-        } catch (Exception e) {
-            return new Response<>(true, "Failed to get category by uuid with cause: \n"+e.getMessage(), ResponseCode.FAIL);
-        }
+
     }
 
     @Override
@@ -103,86 +94,58 @@ public class CategoryServiceImpl implements CategoryService {
 
     @Override
     public Response<String> deleteCategoryByUuid(String uuid) {
-        try {
+
             if (uuid == null){
                 return new Response<>(true, "Argument should not be null", ResponseCode.NULL_ARGUMENT);
             }
 
-            Optional<Category> optionalCategory = categoryRepository.findFirstByUuid(uuid);
-            if (optionalCategory.isEmpty()){
-                return new Response<>(true, "No category found", ResponseCode.NO_RECORD_FOUND);
-            }
+            Category category = categoryRepository.findFirstByUuid(uuid).orElseThrow(() -> new ResourceNotFoundException("Category not found"));
 
-            Optional<FileUpload> optionalFileUpload = fileUtil.findByPath(optionalCategory.get().getCategoryImage());
+            Optional<FileUpload> optionalFileUpload = fileUtil.findByPath(category.getCategoryImage());
 
             optionalFileUpload.ifPresent(fileUtil::setFileStatusIsDeleted);
 
-            categoryRepository.delete(optionalCategory.get());
+            categoryRepository.delete(category);
             return new Response<>(false, ResponseCode.SUCCESS, "Category deleted successfully");
-        } catch (Exception e) {
-            return new Response<>(true, "Failed to delete category by uuid with cause: \n"+e.getMessage(), ResponseCode.FAIL);
-        }
+
     }
 
     @Override
     public Response<CategoryResponseDto> getCategoryByName(String name) {
-        try {
-            if (name == null){
-                return new Response<>(true, "Argument should not be null", ResponseCode.NULL_ARGUMENT);
+
+            if (name.isBlank()){
+                return new Response<>(true, "Argument should not be blank", ResponseCode.NULL_ARGUMENT);
             }
 
-            Optional<Category> optionalCategory = categoryRepository.findFirstByName(name);
-            if (optionalCategory.isEmpty()){
-                return new Response<>(true, "No category found", ResponseCode.NO_RECORD_FOUND);
-            }
+            Category category = categoryRepository.findFirstByName(name).orElseThrow(() -> new ResourceNotFoundException("Category not found"));
 
-
-            CategoryResponseDto responseDto = categoryMapper.toDto(optionalCategory.get());
+            CategoryResponseDto responseDto = categoryMapper.toDto(category);
 
             return new Response<>(false, ResponseCode.SUCCESS, responseDto);
-        } catch (Exception e) {
-            return new Response<>(true, "Failed to get category by name with cause: \n"+e.getMessage(), ResponseCode.FAIL);
-        }
+
     }
 
     @Override
     public Response<?> getUserSubscribedCategories(UserAccount userAccount, Pageable pageable) {
-        try {
-
-            if (userAccount == null){
-                return new Response<>(true, "Anonymous user, full authentication is required", ResponseCode.UNAUTHORIZED);
-            }
 
             Page<CategoryResponseDto> categoryPageable = userSubscribedCategoryRepository.findAllCategoryByUserAccount(userAccount, pageable).map(e -> categoryMapper.toDto(e.getCategory()));
 
             return new Response<>(false, ResponseCode.SUCCESS, categoryPageable);
-        } catch (Exception e) {
-            return new Response<>(true, "Failed to get user's category preference with cause: \n" + e.getMessage(), ResponseCode.FAIL);
-        }
+
     }
 
     @Override
     public Response<String> addUserPreference(UserAccount userAccount, String uuid) {
-        try {
-
-            if (userAccount == null){
-                return new Response<>(true, "Anonymous user, full authentication is required", ResponseCode.UNAUTHORIZED);
+            if (uuid.isBlank()){
+                return new Response<>(true, "Argument should not be blank", ResponseCode.NULL_ARGUMENT);
             }
 
-            if (uuid == null){
-                return new Response<>(true, "Argument should not be null", ResponseCode.NULL_ARGUMENT);
-            }
-
-            Optional<Category> optionalCategory = categoryRepository.findFirstByUuid(uuid);
-            if (optionalCategory.isEmpty()){
-                return new Response<>(true, "No category found", ResponseCode.NO_RECORD_FOUND);
-            }
-
-            Category category = optionalCategory.get();
+           Category category = categoryRepository.findFirstByUuid(uuid).orElseThrow(() -> new ResourceNotFoundException("Category not found"));
 
             Optional<UserSubscribedCategory> subscribedCategory = userSubscribedCategoryRepository.findByUserAccountAndCategory(userAccount, category);
             if (subscribedCategory.isPresent()){
-                return new Response<>(true, "Category is already subscribed", ResponseCode.DUPLICATE);
+                throw new ResourceAlreadyExistException("Category is already subscribed");
+
             }
 
             userSubscribedCategoryRepository.save(
@@ -193,45 +156,24 @@ public class CategoryServiceImpl implements CategoryService {
             );
 
             return new Response<>(false, "Added new category preference successful", ResponseCode.SUCCESS);
-        } catch (Exception e) {
-            return new Response<>(true, "Failed to get user's category preference with cause:\n" + e.getMessage(), ResponseCode.FAIL);
-        }
+
     }
 
     @Override
     public Response<String> removeUserPreference(UserAccount userAccount, String uuid) {
-        try {
 
-            if (userAccount == null){
-                return new Response<>(true, "Anonymous user, full authentication is required", ResponseCode.UNAUTHORIZED);
-            }
-
-            if (uuid == null){
+            if (uuid.isBlank()){
                 return new Response<>(true, "Argument should not be null", ResponseCode.NULL_ARGUMENT);
             }
 
-            Optional<Category> optionalCategory = categoryRepository.findFirstByUuid(uuid);
-            if (optionalCategory.isEmpty()){
-                return new Response<>(true, "No category found", ResponseCode.NO_RECORD_FOUND);
-            }
+            Category category = categoryRepository.findFirstByUuid(uuid).orElseThrow(() -> new ResourceNotFoundException("Category not found"));
 
-            Category category = optionalCategory.get();
 
-            Optional<UserSubscribedCategory> subscribedCategory = userSubscribedCategoryRepository.findByUserAccountAndCategory(userAccount, category);
-            if (subscribedCategory.isEmpty()){
-                return new Response<>(true, "No subscription for the provided category is found", ResponseCode.NO_RECORD_FOUND);
-            }
-            subscribedCategory.ifPresent(userSubscribedCategoryRepository::delete);
+            UserSubscribedCategory subscribedCategory = userSubscribedCategoryRepository.findByUserAccountAndCategory(userAccount, category).orElseThrow(() -> new ResourceNotFoundException("No subscription for the provided category is found"));
+
+            userSubscribedCategoryRepository.delete(subscribedCategory);
             return new Response<>(false, "Removed category preference successfully", ResponseCode.SUCCESS);
 
-        } catch (Exception e) {
-            return new Response<>(true, "Failed to remove user's category preference with cause:\n" + e.getMessage(), ResponseCode.FAIL);
-        }
-    }
-
-
-    public Optional<Category> findCategory(String uuid) {
-        return categoryRepository.findFirstByUuid(uuid);
     }
 
 

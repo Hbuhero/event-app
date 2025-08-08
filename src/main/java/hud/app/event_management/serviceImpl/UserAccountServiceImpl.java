@@ -1,13 +1,11 @@
 package hud.app.event_management.serviceImpl;
 
 import hud.app.event_management.dto.request.UserAccountUpdateRequest;
-import hud.app.event_management.model.EntityType;
-import hud.app.event_management.model.FileUpload;
-import hud.app.event_management.model.UserAccount;
-import hud.app.event_management.repository.FileRepository;
+import hud.app.event_management.model.*;
 import hud.app.event_management.repository.UserAccountRepository;
+import hud.app.event_management.repository.UserEventRepository;
+import hud.app.event_management.repository.UserSubscribedCategoryRepository;
 import hud.app.event_management.service.UserAccountService;
-import hud.app.event_management.utils.FileUtil;
 import hud.app.event_management.utils.responseUtils.Response;
 import hud.app.event_management.utils.responseUtils.ResponseCode;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,23 +13,23 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
-import org.springframework.web.multipart.MultipartFile;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 @Service
 public class UserAccountServiceImpl implements UserAccountService {
 
     private final UserAccountRepository userAccountRepository;
-    private final FileUtil fileUtil;
-
+    private final UserSubscribedCategoryRepository userSubscribedCategoryRepository;
+    private final UserEventRepository userEventRepository;
 
     @Autowired
-    public UserAccountServiceImpl(UserAccountRepository userAccountRepository, FileUtil fileUtil){
+    public UserAccountServiceImpl(UserAccountRepository userAccountRepository, UserSubscribedCategoryRepository userSubscribedCategoryRepository, UserEventRepository userEventRepository){
         this.userAccountRepository = userAccountRepository;
-
-        this.fileUtil = fileUtil;
+        this.userSubscribedCategoryRepository = userSubscribedCategoryRepository;
+        this.userEventRepository = userEventRepository;
     }
 
     @Override
@@ -55,6 +53,31 @@ public class UserAccountServiceImpl implements UserAccountService {
     }
 
     @Override
+    public Response<String> changeUserNotificationSetting(UserAccount userAccount){
+        if (userAccount == null) {
+            return new Response<>(true, "Anonymous user, full authentication is required", ResponseCode.UNAUTHORIZED);
+        }
+
+        userAccount.setNotify(!userAccount.getNotify());
+
+        List<UserEvent> userEvents = userEventRepository.findAllByUserAccount(userAccount);
+        userEvents.forEach(userEvent -> {
+            userEvent.setNotify(!userEvent.getNotify());
+        });
+
+        List<UserSubscribedCategory> userSubscribedCategories = userSubscribedCategoryRepository.findAllByUserAccount(userAccount);
+        userSubscribedCategories.forEach(userSubscribedCategory -> {
+            userSubscribedCategory.setNotify(!userSubscribedCategory.getNotify());
+        });
+         userEventRepository.saveAll(userEvents);
+        userSubscribedCategoryRepository.saveAll(userSubscribedCategories);
+        userAccountRepository.save(userAccount);
+
+        return new Response<>(true, ResponseCode.SUCCESS, "User notification setting updated successfully");
+
+    }
+
+    @Override
     public Response<UserAccount> updateUserAccount(UserAccount userAccount, UserAccountUpdateRequest userAccountDto) {
         try {
 
@@ -62,15 +85,11 @@ public class UserAccountServiceImpl implements UserAccountService {
                 return new Response<>(true, "Anonymous user, full authentication is required", ResponseCode.UNAUTHORIZED);
             }
 
-            Optional<FileUpload> optionalFileUpload = fileUtil.findByPath(userAccount.getProfilePhoto());
-            optionalFileUpload.ifPresent(fileUtil::setFileStatusIsDeleted);
-
             userAccount.setFirstName(userAccountDto.getFirstname());
             userAccount.setMiddleName(userAccountDto.getMiddleName());
             userAccount.setLastName(userAccountDto.getLastname());
             userAccount.setAddress(userAccountDto.getAddress());
             userAccount.setPhone(userAccountDto.getPhone());
-            userAccount.setProfilePhoto(userAccountDto.getProfilePhoto());
 
             UserAccount response = userAccountRepository.save(userAccount);
 

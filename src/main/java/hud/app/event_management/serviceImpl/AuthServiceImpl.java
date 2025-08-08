@@ -4,6 +4,7 @@ import hud.app.event_management.dto.request.*;
 import hud.app.event_management.dto.response.LoginResponseDto;
 import hud.app.event_management.exceptions.ResourceAlreadyExistException;
 import hud.app.event_management.exceptions.ResourceNotFoundException;
+import hud.app.event_management.model.EmailType;
 import hud.app.event_management.security.jwt.JwtService;
 import hud.app.event_management.model.UserAccount;
 import hud.app.event_management.repository.UserAccountRepository;
@@ -11,6 +12,7 @@ import hud.app.event_management.service.AuthService;
 import hud.app.event_management.userDetailService.UserDetailsImpl;
 import hud.app.event_management.utils.responseUtils.Response;
 import hud.app.event_management.utils.responseUtils.ResponseCode;
+import jakarta.mail.MessagingException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -32,19 +34,21 @@ public class AuthServiceImpl implements AuthService {
     private final PasswordEncoder passwordEncoder;
     private final AuthenticationManager authenticationManager;
     private final JwtService jwtService;
+    private final EmailService emailService;
 
 
 
     @Autowired
-    public AuthServiceImpl(UserAccountRepository userAccountRepository, PasswordEncoder passwordEncoder, AuthenticationManager authenticationManager, JwtService jwtService){
+    public AuthServiceImpl(UserAccountRepository userAccountRepository, PasswordEncoder passwordEncoder, AuthenticationManager authenticationManager, JwtService jwtService, EmailService emailService){
         this.userAccountRepository = userAccountRepository;
         this.passwordEncoder = passwordEncoder;
         this.authenticationManager = authenticationManager;
         this.jwtService = jwtService;
 
+        this.emailService = emailService;
     }
     @Override
-    public Response<String> register(UserAccountRegistrationRequest userAccountDto) {
+    public Response<String> register(UserAccountRegistrationRequest userAccountDto) throws MessagingException {
 
             Optional<UserAccount> optionalUserAccount = userAccountRepository.findFirstByUsernameOrPhone(userAccountDto.getEmail(), userAccountDto.getPhone());
 
@@ -65,11 +69,11 @@ public class AuthServiceImpl implements AuthService {
                     .build();
 
             Random random = new SecureRandom();
-            int nextInt = random.nextInt(100001, 999999);
+            String nextInt = String.valueOf(random.nextInt(100001, 999999));
 
-            userAccount.setOneTimePassword(String.valueOf(nextInt));
+            userAccount.setOneTimePassword(nextInt);
 
-            // todo: implement email sender
+            emailService.sendEmail(userAccountDto.getEmail(), EmailType.ACCOUNT_ACTIVATION, nextInt);
 
             userAccount.setLastOtpSentAt(LocalDateTime.now());
 
@@ -87,8 +91,6 @@ public class AuthServiceImpl implements AuthService {
                     new UsernamePasswordAuthenticationToken(loginRequest.getUsername(), loginRequest.getPassword())
             );
             SecurityContextHolder.getContext().setAuthentication(authentication);
-
-            // todo: generate jwt and refresh token
 
             Optional<UserAccount> optionalUserAccount = userAccountRepository.findFirstByUsername(loginRequest.getUsername());
 
@@ -132,7 +134,7 @@ public class AuthServiceImpl implements AuthService {
     }
 
     @Override
-    public Response<String> forgetPassword(String username) {
+    public Response<String> forgetPassword(String username) throws MessagingException {
 
             // find user
             Optional<UserAccount> optionalUserAccount = userAccountRepository.findFirstByUsername(username);
@@ -143,14 +145,15 @@ public class AuthServiceImpl implements AuthService {
             UserAccount userAccount = optionalUserAccount.get();
             // create otp
             Random random = new SecureRandom();
-            int nextInt = random.nextInt(100001, 999999);
+            String nextInt = String.valueOf(random.nextInt(100001, 999999));
 
             userAccount.setOneTimePassword(String.valueOf(nextInt));
             userAccount.setOtpVerified(false);
 
-            // todo: send email with otp
+        emailService.sendEmail(username, EmailType.PASSWORD_RESET, nextInt);
 
-            userAccount.setLastOtpSentAt(LocalDateTime.now());
+
+        userAccount.setLastOtpSentAt(LocalDateTime.now());
 
             userAccountRepository.save(userAccount);
 
@@ -218,7 +221,7 @@ public class AuthServiceImpl implements AuthService {
     }
 
     @Override
-    public Response<String> resendOTP(String username) {
+    public Response<String> resendOTP(String username, String action) {
         try{
             if (username.isBlank()){
                 return new Response<>(true, "Username cant be null", ResponseCode.FAIL);
@@ -240,11 +243,12 @@ public class AuthServiceImpl implements AuthService {
             }
 
             Random random = new SecureRandom();
-            int nextInt = random.nextInt(100001, 999999);
+            String nextInt = String.valueOf(random.nextInt(100001, 999999));
 
-            userAccount.setOneTimePassword(String.valueOf(nextInt));
+            userAccount.setOneTimePassword(nextInt);
 
-            // todo: send email with otp
+            emailService.sendEmail(username, EmailType.valueOf(action), nextInt);
+
 
             userAccount.setLastOtpSentAt(LocalDateTime.now());
             userAccountRepository.save(userAccount);
@@ -265,6 +269,6 @@ public class AuthServiceImpl implements AuthService {
 
     }
 
-    // todo: logout endpoint
+
 }
 

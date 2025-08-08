@@ -12,6 +12,8 @@ public interface UserAccountService {
 
     Response<String> deleteUserByUuid(UserAccount userAccount, String uuid);
 
+    Response<String> changeUserNotificationSetting(UserAccount userAccount);
+
     Response<UserAccount> updateUserAccount(UserAccount userAccount, UserAccountUpdateRequest userAccountDto);
 
     Response<UserAccount> getUserByUuid(String uuid);

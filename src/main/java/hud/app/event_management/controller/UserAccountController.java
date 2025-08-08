@@ -41,7 +41,7 @@ public class UserAccountController {
 
     // get user
     @GetMapping("/{uuid}")
-    @PreAuthorize("hasRole(SUPER_ADMIN')")
+    @PreAuthorize("hasRole('SUPER_ADMIN')")
     private Response<UserAccount> getUserByUuid(@PathVariable("uuid") String uuid){
         return userAccountService.getUserByUuid(uuid);
     }
@@ -64,6 +64,12 @@ public class UserAccountController {
     @PreAuthorize("isAuthenticated()")
     private Response<UserAccount> getUseProfile(@LoggedUser UserAccount userAccount){
         return authService.getLoggedUser(userAccount);
+    }
+
+    @PostMapping("/change-notification-settings")
+    @PreAuthorize("isAuthenticated()")
+    private Response<String> changeNotificationSettings(@LoggedUser UserAccount userAccount){
+        return userAccountService.changeUserNotificationSetting(userAccount);
     }
 
 

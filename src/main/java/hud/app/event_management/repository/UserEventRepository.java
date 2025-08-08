@@ -16,4 +16,6 @@ public interface UserEventRepository extends JpaRepository<UserEvent, Long> {
     Optional<UserEvent> findFirstByUuid(String uuid);
 
     Page<UserEvent> findByUserAccount(UserAccount userAccount, Pageable pageable);
+
+    List<UserEvent> findAllByUserAccount(UserAccount userAccount);
 }

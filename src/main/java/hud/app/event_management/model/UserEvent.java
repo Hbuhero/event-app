@@ -27,4 +27,6 @@ public class UserEvent extends BaseEntity implements Serializable {
     @JoinColumn(name = "event")
     private Event event;
 
+    private Boolean notify = userAccount.getNotify();
+
 }
